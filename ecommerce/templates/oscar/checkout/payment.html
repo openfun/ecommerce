@@ -1,0 +1,60 @@
+{% extends 'edx/base.html' %}
+
+{% load humanize %}
+{% load i18n %}
+{% load staticfiles %}
+
+{% block title %}{% trans "Checkout" %}{% endblock title %}
+
+{% block javascript %}
+    <script src="{% static 'js/pages/checkout_payment.js' %}"></script>
+{% endblock %}
+
+
+{% block content %}
+    <div class="container checkout-payment-page">
+        <pre>
+            TODO: Styling
+            TODO: Display message about verification, if verified seat is present in the basket
+            TODO: Show error message if the basket/payment prep fails.
+        </pre>
+        <h1>{% trans "Order Contents" %}</h1>
+        <table class="table table-striped basket">
+            <thead>
+            <tr>
+                <th>{% trans "Item" %}</th>
+                <th class="number">{% trans "Quantity" %}</th>
+                <th class="number">{% trans "Price (in USD)" %}</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for line in basket.lines.all %}
+                <tr class="basket-item">
+                    <td>{{ line.product.title }}</td>
+                    <td class="number">{{ line.quantity }}</td>
+                    <td class="number">{{ line.price_incl_tax|intcomma }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+            <tfoot>
+            <tr>
+                <th>{% trans "Order Total" %}</th>
+                <th></th>
+                <th class="number">{{ basket.total_incl_tax|intcomma }}</th>
+            </tr>
+            </tfoot>
+        </table>
+        <div class="payment-buttons" data-basket-id="{{ basket.id }}">
+            {% for processor in payment_processors %}
+                <button class="btn payment-button" value="{{ processor.NAME|lower }}">
+                    {% if processor.NAME == 'cybersource' %}
+                        {% trans "Checkout" %}
+                    {% elif processor.NAME == 'paypal' %}
+                        {# Translators: Do NOT translate the name PayPal. #}
+                        {% trans "Checkout with PayPal" %}
+                    {% endif %}
+                </button>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock content %}
