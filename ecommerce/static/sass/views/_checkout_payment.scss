@@ -1,0 +1,17 @@
+/**
+ * Styles for the checkout payment page.
+**/
+
+.checkout-payment-page {
+  .number {
+    @extend .text-right;
+  }
+
+  .payment-buttons {
+    @extend .text-right;
+
+    button {
+      @extend .btn-success;
+    }
+  }
+}
