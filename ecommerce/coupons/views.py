@@ -118,12 +118,26 @@ class CouponOfferView(TemplateView):
 
                 course['image_url'] = get_lms_url(course['media']['course_image']['uri'])
                 stock_records = voucher.offers.first().benefit.range.catalog.stock_records.first()
+                benefit_type = "%" if voucher.offers.first().benefit.type == 'Percentage' else "$"
+                benefit_value = voucher.offers.first().benefit.value
+                price = stock_records.price_excl_tax
+                logger.info("stock_recoproductrd: ")
+                logger.info(stock_records.product.attr.certificate_type)
+                if benefit_type == 'Percentage':
+                    new_price = float(price) * ( benefit_value / 100)
+                else:
+                    new_price = price - benefit_value
+                    if new_price < 0:
+                        new_price = 0.00
                 context.update({
+                    'benefit_type': benefit_type,
+                    'benefit_value': benefit_value,
                     'course': course,
                     'code': code,
-                    'price': stock_records.price_excl_tax,
-                    'verified': (product.attr.certificate_type is 'verified'),
                     'footer': footer
+                    'price': price,
+                    'new_price': "%.2f" % new_price,
+                    'verified': (product.attr.certificate_type == 'verified'),
                 })
                 return context
             return {
