@@ -148,10 +148,9 @@ class Course(models.Model):
                 attribute_values__value_text=credit_provider
             )
 
+        seats =  self.seat_products.filter(certificate_type_query)
         try:
-            seat = self.seat_products.filter(
-                certificate_type_query
-            ).filter(
+            seat = seats.filter(
                 id_verification_required_query
             ).get(
                 credit_provider_query
@@ -213,5 +212,12 @@ class Course(models.Model):
         # TODO Expose via setting
         stock_record.price_currency = 'USD'
         stock_record.save()
+
+        if self.certificate_type_for_mode(certificate_type) == 'professional':
+            for single_seat in seats:
+                # If professional course with id_verification_required exists with no orders associated
+                if seat.attr.id_verification_required != single_seat.attr.id_verification_required \
+                   and not single_seat.line_set.exists():
+                   single_seat.delete()
 
         return seat

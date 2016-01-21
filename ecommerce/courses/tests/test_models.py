@@ -1,11 +1,14 @@
 import ddt
 import mock
 from oscar.core.loading import get_model
+from oscar.test.factories import create_order
+from oscar.test.newfactories import BasketFactory
 
 from ecommerce.courses.models import Course
 from ecommerce.courses.publishers import LMSPublisher
 from ecommerce.courses.tests.factories import CourseFactory
 from ecommerce.extensions.catalogue.tests.mixins import CourseCatalogTestMixin
+from ecommerce.extensions.fulfillment.status import ORDER
 from ecommerce.tests.testcases import TestCase
 
 Product = get_model('catalogue', 'Product')
@@ -175,6 +178,34 @@ class CourseTests(CourseCatalogTestMixin, TestCase):
 
         child_products = Product.objects.filter(structure=Product.CHILD).count()
         self.assertEqual(child_products, 2)
+
+    def test_professional_course_verification_update_with_no_order(self):
+        """
+        Verify that when professional-course is updated with id_verification_required
+        it will leaves no stale products.
+        """
+        course = CourseFactory()
+        professional_product_no_verification = course.create_or_update_seat('professional', False, 0, self.partner)
+        self.assertEqual(course.products.count(), 2)
+        professional_product_verification = course.create_or_update_seat('professional', True, 0, self.partner)
+        self.assertEqual(course.products.count(), 2)
+
+    def test_professional_course_verification_update_with_orders(self):
+        """
+        Verify that when professional-course is updated with id_verification_required
+        but having orders it will remain in system.
+        """
+        user = self.create_user()
+        course = CourseFactory()
+        professional_product_no_verification = course.create_or_update_seat('professional', False, 0, self.partner)
+        self.assertEqual(course.products.count(), 2)
+        basket = BasketFactory(owner=user)
+        basket.add_product(professional_product_no_verification)
+        order = create_order(basket=basket, user=user)
+        order.status = ORDER.COMPLETE
+        order.save()
+        professional_product_verification = course.create_or_update_seat('professional', True, 0, self.partner)
+        self.assertEqual(course.products.count(), 3)
 
     def test_type(self):
         """ Verify the property returns a type value corresponding to the available products. """
