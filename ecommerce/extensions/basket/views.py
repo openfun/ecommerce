@@ -3,6 +3,8 @@ from __future__ import unicode_literals
 from django.http import HttpResponseRedirect, HttpResponseBadRequest, HttpResponseServerError
 from oscar.apps.basket.views import *  # pylint: disable=wildcard-import, unused-wildcard-import
 
+from ecommerce.coupons.views import get_voucher
+from ecommerce.extensions.basket.utils import prepare_basket
 from ecommerce.extensions.partner.shortcuts import get_partner_for_site
 
 Basket = get_model('basket', 'Basket')
@@ -11,30 +13,21 @@ StockRecord = get_model('partner', 'StockRecord')
 
 
 class BasketSingleItemView(View):
-    def _prepare_basket(self, site, user, product):  # pylint: disable=unused-argument
-        """
-        Prepare the basket, and add the product.
-
-        Existing baskets are merged and flushed. The specified product will be added to the remaining open basket,
-        and the basket will be frozen.
-
-        Arguments
-            product(Product) -- Product to be added to the basket.
-        """
-        basket = Basket.get_basket(user, site)
-        basket.thaw()
-        basket.flush()
-        basket.reset_offer_applications()
-        basket.add_product(product, 1)
-
     def get(self, request):
         partner = get_partner_for_site(request)
         if not partner:
             return HttpResponseServerError('No Partner is associated with this site.')
 
         sku = request.GET.get('sku', None)
+        code = request.GET.get('code', None)
+
         if not sku:
             return HttpResponseBadRequest('No SKU provided.')
+
+        if code:
+            voucher, _ = get_voucher(code=code)
+        else:
+            voucher = None
 
         # Make sure the SKU exists
         try:
@@ -49,7 +42,7 @@ class BasketSingleItemView(View):
         if not purchase_info.availability.is_available_to_buy:
             return HttpResponseBadRequest('SKU [{}] does not exist.'.format(sku))
 
-        self._prepare_basket(request.site, request.user, product)
+        prepare_basket(request, request.user, product, voucher)
 
         # Redirect to payment page
         url = reverse('checkout:payment')
