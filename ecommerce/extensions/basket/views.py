@@ -1,11 +1,15 @@
 from __future__ import unicode_literals
 
+from django.conf import settings
 from django.http import HttpResponseRedirect, HttpResponseBadRequest, HttpResponseServerError
+
 from oscar.apps.basket.views import *  # pylint: disable=wildcard-import, unused-wildcard-import
 
 from ecommerce.coupons.views import get_voucher
 from ecommerce.extensions.basket.utils import prepare_basket
+from ecommerce.extensions.payment.helpers import get_processor_class
 from ecommerce.extensions.partner.shortcuts import get_partner_for_site
+from ecommerce.settings import get_lms_url
 
 Basket = get_model('basket', 'Basket')
 Selector = get_class('partner.strategy', 'Selector')
@@ -45,5 +49,22 @@ class BasketSingleItemView(View):
         prepare_basket(request, request.user, product, voucher)
 
         # Redirect to payment page
-        url = reverse('checkout:payment')
+        url = reverse('basket:summary')
         return HttpResponseRedirect(url, status=303)
+
+
+class BasketSummaryView(BasketView):
+    def get_context_data(self, **kwargs):
+        context = super(BasketSummaryView, self).get_context_data(**kwargs)
+
+        context.update({
+            'payment_processors': self.get_payment_processors(),
+            'homepage_url': get_lms_url('')
+        })
+        return context
+
+    def get_payment_processors(self):
+        """ Retrieve the list of active payment processors. """
+        # TODO Retrieve this information from SiteConfiguration
+        processors = (get_processor_class(path) for path in settings.PAYMENT_PROCESSORS)
+        return [processor for processor in processors if processor.is_enabled()]

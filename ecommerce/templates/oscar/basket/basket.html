@@ -1,0 +1,41 @@
+{% extends 'edx/base.html' %}
+{% load thumbnail %}
+{% load i18n %}
+{% load humanize %}
+{% load staticfiles %}
+
+
+{# Hide mini-basket so we don't have two baskets to keep in sync #}
+{% block mini_basket %}{% endblock %}
+
+
+{% block javascript %}
+    <script src="{% static 'js/pages/checkout_payment.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+    {# Use a partial template so that AJAX can be used to re-render basket #}
+    {% include 'basket/partials/basket_content.html' %}
+{% endblock content %}
+
+{% block onbodyload %}
+    {{ block.super }}
+    {# We pass in the URL to send AJAX requests to #}
+    var options = {
+        'basketURL': '{% url 'basket:summary' %}'
+    };
+    oscar.basket.init(options);
+{% endblock %}
+
+
+{% block footer %}
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-xs-12 text-right">
+                    <em>{% blocktrans %}Checkout{% endblocktrans %}</em>
+                </div>
+            </div>
+        </div>
+    </footer>
+{% endblock footer %}
