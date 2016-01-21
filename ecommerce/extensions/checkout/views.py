@@ -7,6 +7,9 @@ from oscar.apps.checkout.views import *  # pylint: disable=wildcard-import, unus
 
 from ecommerce.extensions.payment.helpers import get_processor_class
 
+Applicator = get_class('offer.utils', 'Applicator')
+Basket = get_model('basket', 'Basket')
+
 
 class PaymentView(TemplateView):
     """
@@ -25,6 +28,9 @@ class PaymentView(TemplateView):
         context = super(PaymentView, self).get_context_data(**kwargs)
         basket = Basket.get_basket(self.request.user, self.request.site)
 
+        # Need to Apply any vouchers in the basket as they do not stay applied.
+        Applicator().apply(basket, self.request.user, self.request)
+
         context.update({
             'basket': basket,
             'payment_processors': self.get_payment_processors()
@@ -34,4 +40,5 @@ class PaymentView(TemplateView):
     def get_payment_processors(self):
         """ Retrieve the list of active payment processors. """
         # TODO Retrieve this information from SiteConfiguration
-        return [get_processor_class(path) for path in settings.PAYMENT_PROCESSORS]
+        processors = (get_processor_class(path) for path in settings.PAYMENT_PROCESSORS)
+        return [processor for processor in processors if processor.is_enabled()]
