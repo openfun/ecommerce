@@ -5,101 +5,49 @@
 {% load widget_tweaks %}
 
 {% if not basket.is_empty %}
-    {% block basket_form_headers %}
-        <div class="basket-title hidden-xs">
-            <div class="row">
-                <p class="col-sm-3 h3">{% trans "Quantity" %}</p>
-                <p class="col-sm-1 h3 align-right">{% trans "Price" %}</p>
-                <p class="col-sm-2 h3 align-right">{% trans "Total" %}</p>
-            </div>
-        </div>
-    {% endblock %}
-
     {% block basket_form_main %}
         <form action="." method="post" class="basket_summary" id="basket_formset">
             {% csrf_token %}
             {{ formset.management_form }}
 
-            {% for form in formset %}
-                {% with line=form.instance product=form.instance.product %}
-                    {% purchase_info_for_line request line as session %}
-                    <div class="basket-items">
+            <div class="basket-items">
+                {% for form in formset %}
+                    {% with line=form.instance product=form.instance.product %}
+                        {% purchase_info_for_line request line as session %}
+                        <p>{% trans "Enroll and Pursue a Verified Certificate in" %}</p>
                         <div class="row">
-                            <div class="col-sm-2">
+                            <div class="col-sm-2 course_image">
                                 {{ form.id }}
                                 {% with image=product.primary_image %}
                                     {% thumbnail image.original "100x100" upscale=False as thumb %}
-                                        <a href="{{ product.get_absolute_url }}">
-                                            <img class="thumbnail" src="{{ thumb.url }}" alt="{{ product.get_title }}"/>
-                                        </a>
+                                        <img class="thumbnail" src="{{ thumb.url }}" alt="{{ product.get_title }}"/>
                                     {% endthumbnail %}
                                 {% endwith %}
                             </div>
                             <div class="col-sm-4">
-                                <h3><a href="{{ product.get_absolute_url }}">{{ line.description }}</a></h3>
-                                <p class="availability {{ session.availability.code }}">{{ session.availability.message }}</p>
+                                <p class="course_name">{{ product.course.name }}</p>
+                                <p class="course_description"></p>
                             </div>
-                            <div class="col-sm-3">
-                                <div class="checkout-quantity">
-                                    <div class="input-group  {% if form.errors %}error{% endif %}">
-                                        {% render_field form.quantity class+="form-control" %}
-                                    <span class="input-group-btn">
-                                        <button class="btn btn-default" type="submit" data-loading-text="{% trans 'Updating...' %}">{% trans "Update" %}</button>
-                                    </span>
-                                    </div>
-                                </div>
-                                    <div>
-                                        <a href="#" data-id="{{ forloop.counter0 }}" data-behaviours="remove" class="inline">{% trans "Remove" %}</a>
-                                        {% if user.is_authenticated %}
-                                            | <a href="#" data-id="{{ forloop.counter0 }}" data-behaviours="save" class="inline">{% trans "Save for later" %}</a>
-                                        {% endif %}
-                                        <div style="display:none">
-                                            {{ form.save_for_later }}
-                                            {{ form.DELETE }}
-                                        </div>
-                                        {% for field_errors in form.errors.values %}
-                                            {% for error in field_errors %}
-                                                <span class="error-block"><i class="icon-exclamation-sign"></i> {{ error }}</span>
-                                            {% endfor %}
-
-                                        {% endfor %}
-                                    </div>
-
-                            </div>
-                            <div class="col-sm-1">
-                                <p class="price_color align-right">
-                                    {% if line.is_tax_known %}
-                                        {{ line.unit_price_incl_tax|currency:line.price_currency }}
-                                    {% else %}
-                                        {{ line.unit_price_excl_tax|currency:line.price_currency }}
-                                    {% endif %}
-                                </p>
-                            </div>
-                            <div class="col-sm-2">
-                                <p class="price_color align-right">
-                                    {% if line.is_tax_known %}
-                                        {{ line.line_price_incl_tax|currency:line.price_currency }}
-                                    {% else %}
-                                        {{ line.line_price_excl_tax|currency:line.price_currency }}
-                                    {% endif %}
-                                </p>
+                            <div class="col-sm-2 price">
+                                {% if line.is_tax_known %}
+                                    {{ line.line_price_incl_tax|currency:line.price_currency }}
+                                {% else %}
+                                    {{ line.line_price_excl_tax|currency:line.price_currency }}
+                                {% endif %}
                             </div>
                         </div>
-                    </div>
-                {% endwith %}
-            {% endfor %}
+                    {% endwith %}
+                {% endfor %}
+            </div>
         </form>
     {% endblock %}
 
-    <div class="row">
+    <div class="row total">
         {% block vouchers %}
             {# Hide the entire section if a custom BasketView doesn't pass in a voucher form #}
             {% if voucher_form %}
-                <div class="col-sm-6">
-                    <div class="sub-header">
-                        <h2>{% trans "Coupon code" %}</h2>
-                    </div>
-                    <p id="voucher_form_link"><a href="#voucher" class="btn btn-default btn-full">{% trans "I have a coupon code..." %}</a></p>
+                <div class="use_voucher">
+                    <p id="voucher_form_link"><a href="#voucher">{% trans "Apply a promotion code" %}</a></p>
 
                     <div id="voucher_form_container" style="display:none">
                         <form id="voucher_form" action="{% url 'basket:vouchers-add' %}" method="post">
@@ -114,26 +62,21 @@
         {% endblock vouchers %}
 
         {% block baskettotals %}
-            <div class="col-sm-6">
-                <div class="sub-header">
-                    <h2>{% trans "Totals" %}</h2>
-                </div>
-                {% include 'basket/partials/basket_totals.html' with editable=1 %}
-            </div>
+            {% include 'basket/partials/basket_totals.html' with editable=1 %}
         {% endblock baskettotals %}
     </div>
 
     <div class="payment-buttons" data-basket-id="{{ basket.id }}">
-          {% for processor in payment_processors %}
-                  <button class="btn btn-default payment-button" value="{{ processor.NAME|lower }}">
-                    {% if processor.NAME == 'cybersource' %}
-                        {% trans "Checkout" %}
-                    {% elif processor.NAME == 'paypal' %}
-                        {# Translators: Do NOT translate the name PayPal. #}
-                        {% trans "Checkout with PayPal" %}
-                    {% endif %}
-                  </button>
-              {% endfor %}
+        {% for processor in payment_processors %}
+            <button class="btn btn-primary payment-button" value="{{ processor.NAME|lower }}">
+                {% if processor.NAME == 'cybersource' %}
+                    {% trans "Checkout" %}
+                {% elif processor.NAME == 'paypal' %}
+                    {# Translators: Do NOT translate the name PayPal. #}
+                    {% trans "Checkout with PayPal" %}
+                {% endif %}
+            </button>
+        {% endfor %}
     </div>
 {% else %}
     {% block emptybasket %}
