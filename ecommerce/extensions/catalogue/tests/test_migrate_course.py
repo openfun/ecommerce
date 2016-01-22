@@ -106,7 +106,7 @@ class CourseMigrationTestMixin(CourseCatalogTestMixin):
         seats = course.seat_products
 
         # Verify that all modes are migrated.
-        self.assertEqual(len(seats), len(self.prices))
+        self.assertEqual(len(seats), len(self.prices) - 1)
 
         parent = course.products.get(structure=Product.PARENT)
         self.assertEqual(list(parent.categories.all()), [self.category])
