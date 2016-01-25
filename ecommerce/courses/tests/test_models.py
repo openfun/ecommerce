@@ -185,9 +185,11 @@ class CourseTests(CourseCatalogTestMixin, TestCase):
         it will leaves no stale products.
         """
         course = CourseFactory()
-        professional_product_no_verification = course.create_or_update_seat('professional', False, 0, self.partner)
+        # professional_product with no verification
+        course.create_or_update_seat('professional', False, 0, self.partner)
         self.assertEqual(course.products.count(), 2)
-        professional_product_verification = course.create_or_update_seat('professional', True, 0, self.partner)
+        # professional_product with verification
+        course.create_or_update_seat('professional', True, 0, self.partner)
         self.assertEqual(course.products.count(), 2)
 
     def test_professional_course_verification_update_with_orders(self):
@@ -204,7 +206,8 @@ class CourseTests(CourseCatalogTestMixin, TestCase):
         order = create_order(basket=basket, user=user)
         order.status = ORDER.COMPLETE
         order.save()
-        professional_product_verification = course.create_or_update_seat('professional', True, 0, self.partner)
+        # professional_product with verification
+        course.create_or_update_seat('professional', True, 0, self.partner)
         self.assertEqual(course.products.count(), 3)
 
     def test_type(self):
