@@ -5,94 +5,96 @@
 {% load widget_tweaks %}
 
 {% if not basket.is_empty %}
-    {% block basket_form_main %}
-        <form action="." method="post" class="basket_summary" id="basket_formset">
-            {% csrf_token %}
-            {{ formset.management_form }}
+    <div id="content-inner">
+        {% block basket_form_main %}
+            <form action="." method="post" class="basket_summary" id="basket_formset">
+                {% csrf_token %}
+                {{ formset.management_form }}
 
-            <div class="basket-items">
-                {% for form in formset %}
-                    {% with line=form.instance product=form.instance.product %}
-                        {% purchase_info_for_line request line as session %}
-                        <p>{% trans "Enroll and Pursue a Verified Certificate in" %}</p>
-                        <div class="row">
-                            <div class="col-sm-2 course_image">
-                                {{ form.id }}
-                                {% with image=product.primary_image %}
-                                    {% thumbnail image.original "100x100" upscale=False as thumb %}
-                                        <img class="thumbnail" src="{{ product.course.image }}" alt="{{ product.get_title }}"/>
-                                    {% endthumbnail %}
-                                {% endwith %}
+                <div class="basket-items">
+                    {% for form in formset %}
+                        {% with line=form.instance product=form.instance.product %}
+                            {% purchase_info_for_line request line as session %}
+                            <p>{% trans "Enroll and Pursue a Verified Certificate in" %}</p>
+                            <div class="row">
+                                <div class="col-sm-2 course_image">
+                                    {{ form.id }}
+                                    {% with image=product.primary_image %}
+                                        {% thumbnail image.original "100x100" upscale=False as thumb %}
+                                            <img class="thumbnail" src="{{ product.course.image }}" alt="{{ product.get_title }}"/>
+                                        {% endthumbnail %}
+                                    {% endwith %}
+                                </div>
+                                <div class="col-sm-4">
+                                    <p class="course_name">{{ product.course.name }} - {{ product.course.organization }} ({{ product.course.run }})</p>
+                                    <p class="course_description">{{ product.course.description }}</p>
+                                </div>
+                                <div class="col-sm-2 price">
+                                    {% if line.is_tax_known %}
+                                        {{ line.line_price_incl_tax|currency:line.price_currency }}
+                                    {% else %}
+                                        {{ line.line_price_excl_tax|currency:line.price_currency }}
+                                    {% endif %}
+                                </div>
                             </div>
-                            <div class="col-sm-4">
-                                <p class="course_name">{{ product.course.name }} - {{ product.course.organization }} ({{ product.course.run }})</p>
-                                <p class="course_description">{{ product.course.description }}</p>
-                            </div>
-                            <div class="col-sm-2 price">
-                                {% if line.is_tax_known %}
-                                    {{ line.line_price_incl_tax|currency:line.price_currency }}
-                                {% else %}
-                                    {{ line.line_price_excl_tax|currency:line.price_currency }}
-                                {% endif %}
+                        {% endwith %}
+                    {% endfor %}
+                </div>
+            </form>
+        {% endblock %}
+
+        <div class="total">
+            <div class="row">
+                {% block vouchers %}
+                    {# Hide the entire section if a custom BasketView doesn't pass in a voucher form #}
+                    {% if voucher_form %}
+                        <div class="use_voucher col-sm-4">
+                            <p id="voucher_form_link"><a href="#voucher">{% trans "Apply a promotion code" %}</a></p>
+
+                            <div id="voucher_form_container">
+                                <form id="voucher_form" action="{% url 'basket:vouchers-add' %}" method="post">
+                                    {% csrf_token %}
+                                    {% include "partials/form_fields.html" with form=voucher_form %}
+                                    <button type="submit" class="btn btn-info" data-loading-text="{% trans 'Adding...' %}">{% trans "Add coupon" %}</button>
+                                    {% trans "or" %} <a href="#" id="voucher_form_cancel">{% trans "cancel" %}</a>
+                                </form>
                             </div>
                         </div>
-                    {% endwith %}
+                    {% endif %}
+                {% endblock vouchers %}
+
+                {% block baskettotals %}
+                    {% include 'basket/partials/basket_totals.html' with editable=1 %}
+                {% endblock baskettotals %}
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="payment-buttons col-sm-3" data-basket-id="{{ basket.id }}">
+                {% for processor in payment_processors %}
+                    <button class="btn btn-primary payment-button" value="{{ processor.NAME|lower }}">
+                        {% if processor.NAME == 'cybersource' %}
+                            {% trans "Checkout" %}
+                        {% elif processor.NAME == 'paypal' %}
+                            {# Translators: Do NOT translate the name PayPal. #}
+                            {% trans "Checkout with PayPal" %}
+                        {% endif %}
+                    </button>
                 {% endfor %}
             </div>
-        </form>
-    {% endblock %}
-
-    <div class="total">
-        <div class="row">
-            {% block vouchers %}
-                {# Hide the entire section if a custom BasketView doesn't pass in a voucher form #}
-                {% if voucher_form %}
-                    <div class="use_voucher col-sm-4">
-                        <p id="voucher_form_link"><a href="#voucher">{% trans "Apply a promotion code" %}</a></p>
-
-                        <div id="voucher_form_container" style="display:none">
-                            <form id="voucher_form" action="{% url 'basket:vouchers-add' %}" method="post">
-                                {% csrf_token %}
-                                {% include "partials/form_fields.html" with form=voucher_form %}
-                                <button type="submit" class="btn btn-info" data-loading-text="{% trans 'Adding...' %}">{% trans "Add coupon" %}</button>
-                                {% trans "or" %} <a href="#" id="voucher_form_cancel">{% trans "cancel" %}</a>
-                            </form>
-                        </div>
-                    </div>
-                {% endif %}
-            {% endblock vouchers %}
-
-            {% block baskettotals %}
-                {% include 'basket/partials/basket_totals.html' with editable=1 %}
-            {% endblock baskettotals %}
         </div>
-    </div>
 
-    <div class="row">
-        <div class="payment-buttons col-sm-3" data-basket-id="{{ basket.id }}">
-            {% for processor in payment_processors %}
-                <button class="btn btn-primary payment-button" value="{{ processor.NAME|lower }}">
-                    {% if processor.NAME == 'cybersource' %}
-                        {% trans "Checkout" %}
-                    {% elif processor.NAME == 'paypal' %}
-                        {# Translators: Do NOT translate the name PayPal. #}
-                        {% trans "Checkout with PayPal" %}
-                    {% endif %}
-                </button>
-            {% endfor %}
+        <div class="row verification-note">
+            <span><i class="fa fa-exclamation-circle"></i></span>
+            <b>{% trans "Note:" %}</b>{% trans "You will need a " %}
+            <b>{% trans "webcam" %}</b>{% trans " and a " %}
+            <b>{% trans "photo ID" %}</b>{% trans " to verify your identity before the course starts on " %}
+            {{course.start_date}}.
         </div>
-    </div>
-
-    <div class="row verification-note">
-        <span><i class="fa fa-exclamation-circle"></i></span>
-        <b>{% trans "Note:" %}</b>{% trans "You will need a " %}
-        <b>{% trans "webcam" %}</b>{% trans " and a " %}
-        <b>{% trans "photo ID" %}</b>{% trans " to verify your identity before the course starts on " %}
-        {{course.start_date}}.
-    </div>
-    <div class="row help">
-        <p><b>{% trans "Have questions?" %}</b></p>
-        <p>{% trans "Please read " %}<a href="{{faq_link}}" target="_blank">{% trans "our FAQs to view common questions about our certificates." %}</a></p>
+        <div class="row help">
+            <p><b>{% trans "Have questions?" %}</b></p>
+            <p>{% trans "Please read " %}<a href="{{faq_link}}" target="_blank">{% trans "our FAQs to view common questions about our certificates." %}</a></p>
+        </div>
     </div>
 {% else %}
     {% block emptybasket %}
@@ -135,7 +137,7 @@
                                 <h3><a href="{{ form.instance.product.get_absolute_url }}">{{ form.instance.description }}</a></h3>
                                 <p class="availability {{ session.availability.code }}">{{ session.availability.message }}</p>
                                 <a href="#" data-id="{{ forloop.counter0 }}" data-behaviours="remove">{% trans "Remove" %}</a>
-                                <div style="display:none">
+                                <div class="remove-code">
                                     {{ form.move_to_basket }}
                                     {{ form.DELETE }}
                                 </div>
