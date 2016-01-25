@@ -7,10 +7,13 @@ from oscar.apps.basket.views import *  # pylint: disable=wildcard-import, unused
 
 from ecommerce.coupons.views import get_voucher
 from ecommerce.extensions.api.data import get_lms_footer
-from ecommerce.extensions.basket.utils import prepare_basket
+from ecommerce.extensions.basket.utils import prepare_basket, get_product_from_sku
 from ecommerce.extensions.payment.helpers import get_processor_class
 from ecommerce.extensions.partner.shortcuts import get_partner_for_site
 from ecommerce.settings import get_lms_url
+
+from edx_rest_api_client.client import EdxRestApiClient
+from edx_rest_api_client.exceptions import SlumberHttpBaseException
 
 Basket = get_model('basket', 'Basket')
 Selector = get_class('partner.strategy', 'Selector')
@@ -34,15 +37,11 @@ class BasketSingleItemView(View):
         else:
             voucher = None
 
-        # Make sure the SKU exists
-        try:
-            stock_record = StockRecord.objects.get(partner=partner, partner_sku=sku)
-        except StockRecord.DoesNotExist:
-            msg = 'SKU [{sku}] does not exist for partner [{name}].'.format(sku=sku, name=partner.name)
+        product, msg = get_product_from_sku(partner=partner, sku=sku)
+
+        if product is None:
             return HttpResponseBadRequest(msg)
 
-        # Make sure the product can be purchased
-        product = stock_record.product
         purchase_info = request.strategy.fetch_for_product(product)
         if not purchase_info.availability.is_available_to_buy:
             return HttpResponseBadRequest('SKU [{}] does not exist.'.format(sku))
@@ -51,14 +50,27 @@ class BasketSingleItemView(View):
 
         # Redirect to payment page
         url = reverse('basket:summary')
-        return HttpResponseRedirect(url, status=303)
+        return HttpResponseRedirect(url+'?sku='+sku, status=303)
 
 
 class BasketSummaryView(BasketView):
     def get_context_data(self, **kwargs):
         context = super(BasketSummaryView, self).get_context_data(**kwargs)
+        sku = self.request.GET.get('sku', None)
+        partner = get_partner_for_site(self.request)
+        product, _ = get_product_from_sku(partner=partner, sku=sku)
+        if product:
+            api = EdxRestApiClient(
+                get_lms_url('api/courses/v1/'),
+                )
+            try:
+                course = api.courses(product.course_id).get()
+                course['image_url'] = get_lms_url(course['media']['course_image']['uri'])
+            except SlumberHttpBaseException as e:
+                logger.exception('Could not get course information. [%s]', e)
 
         context.update({
+            'product': course,
             'payment_processors': self.get_payment_processors(),
             'homepage_url': get_lms_url(''),
             'footer': get_lms_footer()
