@@ -33,13 +33,7 @@
 
 
 {% block footer %}
-    <footer class="footer">
-        <div class="container">
-            <div class="row">
-                <div class="col-xs-12 text-right">
-                    <em>{% blocktrans %}Checkout{% endblocktrans %}</em>
-                </div>
-            </div>
-        </div>
-    </footer>
+    {% autoescape off %}
+        {{ footer }}
+    {% endautoescape %}
 {% endblock footer %}

@@ -13,3 +13,9 @@
         {% endif %}
     </div>
 {% endblock %}
+
+{% block footer %}
+    {% autoescape off %}
+        {{ footer }}
+    {% endautoescape %}
+{% endblock footer %}

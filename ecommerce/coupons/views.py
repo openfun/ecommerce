@@ -15,6 +15,7 @@ from edx_rest_api_client.exceptions import SlumberHttpBaseException
 from ecommerce.core.views import StaffOnlyMixin
 from ecommerce.extensions.api import data as data_api
 from ecommerce.extensions.api.constants import APIConstants as AC
+from ecommerce.extensions.api.data import get_lms_footer
 from ecommerce.extensions.basket.utils import prepare_basket
 from ecommerce.extensions.checkout.mixins import EdxOrderPlacementMixin
 from ecommerce.extensions.fulfillment.status import ORDER
@@ -97,7 +98,7 @@ class CouponOfferView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super(CouponOfferView, self).get_context_data(**kwargs)
-
+        footer = get_lms_footer()
         code = self.request.GET.get('code', None)
         if code is not None:
             voucher, product = get_voucher(code=code)
@@ -111,7 +112,8 @@ class CouponOfferView(TemplateView):
                 except SlumberHttpBaseException as e:
                     logger.exception('Could not get course information. [%s]', e)
                     return {
-                        'error': _('Could not get course information. [{error}]'.format(error=e))
+                        'error': _('Could not get course information. [{error}]'.format(error=e)),
+                        'footer': footer
                     }
 
                 course['image_url'] = get_lms_url(course['media']['course_image']['uri'])
@@ -120,14 +122,17 @@ class CouponOfferView(TemplateView):
                     'course': course,
                     'code': code,
                     'price': stock_records.price_excl_tax,
-                    'verified': (product.attr.certificate_type is 'verified')
+                    'verified': (product.attr.certificate_type is 'verified'),
+                    'footer': footer
                 })
                 return context
             return {
-                'error': msg
+                'error': msg,
+                'footer': footer
             }
         return {
-            'error': _('This coupon code is invalid.')
+            'error': _('This coupon code is invalid.'),
+            'footer': footer
         }
 
     def get(self, request, *args, **kwargs):
