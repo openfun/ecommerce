@@ -4,7 +4,8 @@
 
         .basket-items,
         .total,
-        .verification-note {
+        .verification-note,
+        .help {
             margin: 0 20px;
         }
 
@@ -66,6 +67,10 @@
             padding: 20px;
 
             border: 1px solid #ddd;
+        }
+
+        .help {
+            margin-top: 20px;
         }
     }
 }
