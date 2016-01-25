@@ -42,41 +42,51 @@
         </form>
     {% endblock %}
 
-    <div class="row total">
-        {% block vouchers %}
-            {# Hide the entire section if a custom BasketView doesn't pass in a voucher form #}
-            {% if voucher_form %}
-                <div class="use_voucher">
-                    <p id="voucher_form_link"><a href="#voucher">{% trans "Apply a promotion code" %}</a></p>
+    <div class="total">
+        <div class="row">
+            {% block vouchers %}
+                {# Hide the entire section if a custom BasketView doesn't pass in a voucher form #}
+                {% if voucher_form %}
+                    <div class="use_voucher col-sm-4">
+                        <p id="voucher_form_link"><a href="#voucher">{% trans "Apply a promotion code" %}</a></p>
 
-                    <div id="voucher_form_container" style="display:none">
-                        <form id="voucher_form" action="{% url 'basket:vouchers-add' %}" method="post">
-                            {% csrf_token %}
-                            {% include "partials/form_fields.html" with form=voucher_form %}
-                            <button type="submit" class="btn btn-info" data-loading-text="{% trans 'Adding...' %}">{% trans "Add coupon" %}</button>
-                            {% trans "or" %} <a href="#" id="voucher_form_cancel">{% trans "cancel" %}</a>
-                        </form>
+                        <div id="voucher_form_container" style="display:none">
+                            <form id="voucher_form" action="{% url 'basket:vouchers-add' %}" method="post">
+                                {% csrf_token %}
+                                {% include "partials/form_fields.html" with form=voucher_form %}
+                                <button type="submit" class="btn btn-info" data-loading-text="{% trans 'Adding...' %}">{% trans "Add coupon" %}</button>
+                                {% trans "or" %} <a href="#" id="voucher_form_cancel">{% trans "cancel" %}</a>
+                            </form>
+                        </div>
                     </div>
-                </div>
-            {% endif %}
-        {% endblock vouchers %}
+                {% endif %}
+            {% endblock vouchers %}
 
-        {% block baskettotals %}
-            {% include 'basket/partials/basket_totals.html' with editable=1 %}
-        {% endblock baskettotals %}
+            {% block baskettotals %}
+                {% include 'basket/partials/basket_totals.html' with editable=1 %}
+            {% endblock baskettotals %}
+        </div>
     </div>
 
-    <div class="payment-buttons" data-basket-id="{{ basket.id }}">
-        {% for processor in payment_processors %}
-            <button class="btn btn-primary payment-button" value="{{ processor.NAME|lower }}">
-                {% if processor.NAME == 'cybersource' %}
-                    {% trans "Checkout" %}
-                {% elif processor.NAME == 'paypal' %}
-                    {# Translators: Do NOT translate the name PayPal. #}
-                    {% trans "Checkout with PayPal" %}
-                {% endif %}
-            </button>
-        {% endfor %}
+    <div class="row">
+        <div class="payment-buttons col-sm-3" data-basket-id="{{ basket.id }}">
+            {% for processor in payment_processors %}
+                <button class="btn btn-primary payment-button" value="{{ processor.NAME|lower }}">
+                    {% if processor.NAME == 'cybersource' %}
+                        {% trans "Checkout" %}
+                    {% elif processor.NAME == 'paypal' %}
+                        {# Translators: Do NOT translate the name PayPal. #}
+                        {% trans "Checkout with PayPal" %}
+                    {% endif %}
+                </button>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="row verification-note">
+        <span><i class="fa fa-exclamation-circle"></i></span>
+        <b>Note:</b> You will need a <b>webcam</b> and a <b>photo ID</b> to verify your identity
+        before the course starts.
     </div>
 {% else %}
     {% block emptybasket %}

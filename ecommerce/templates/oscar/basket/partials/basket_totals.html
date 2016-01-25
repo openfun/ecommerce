@@ -2,7 +2,7 @@
 {% load currency_filters %}
 {% load shipping_tags %}
 
-<div id="basket_totals">
+<div id="basket_totals" class="col-sm-2">
     {% block order_total %}
         {% trans "Total:" %}
         {% if order_total.is_tax_known %}
