@@ -38,6 +38,10 @@
                 .price {
                     @include text-align(right);
                 }
+
+                .remove-code {
+                    display: none;
+                }
             }
         }
 
@@ -54,6 +58,10 @@
                 color: #337ab7;
                 font-size: 18px;
                 font-weight: bold;
+            }
+
+            #voucher_form_container {
+                display: none;
             }
         }
 
