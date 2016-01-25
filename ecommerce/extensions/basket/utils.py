@@ -49,3 +49,26 @@ def prepare_basket(request, user, product, voucher=None):
                 basket.vouchers.remove(voucher)
 
     return basket
+
+
+def get_product_from_sku(partner, sku):
+    """
+    Looks up a product stock record for a given partner/sku
+
+    Arguments:
+    partner: The partner that the product belongs.
+    sku: The sku for the product to lookup.
+
+    Returns:
+    Product: The product that matches the sku.
+    Msg: An error message if the product is not found.
+    """
+    try:
+        stock_record = StockRecord.objects.get(partner=partner, partner_sku=sku)
+    except StockRecord.DoesNotExist:
+        msg = 'SKU [{sku}] does not exist for partner [{name}].'.format(sku=sku, name=partner.name)
+        return None, msg
+
+    product = stock_record.product
+
+    return product, None
