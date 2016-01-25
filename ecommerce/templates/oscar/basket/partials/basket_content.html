@@ -20,13 +20,13 @@
                                 {{ form.id }}
                                 {% with image=product.primary_image %}
                                     {% thumbnail image.original "100x100" upscale=False as thumb %}
-                                        <img class="thumbnail" src="{{ thumb.url }}" alt="{{ product.get_title }}"/>
+                                        <img class="thumbnail" src="{{ product.course.image }}" alt="{{ product.get_title }}"/>
                                     {% endthumbnail %}
                                 {% endwith %}
                             </div>
                             <div class="col-sm-4">
-                                <p class="course_name">{{ product.course.name }}</p>
-                                <p class="course_description"></p>
+                                <p class="course_name">{{ product.course.name }} - {{ product.course.organization }} ({{ product.course.run }})</p>
+                                <p class="course_description">{{ product.course.description }}</p>
                             </div>
                             <div class="col-sm-2 price">
                                 {% if line.is_tax_known %}
@@ -85,8 +85,14 @@
 
     <div class="row verification-note">
         <span><i class="fa fa-exclamation-circle"></i></span>
-        <b>Note:</b> You will need a <b>webcam</b> and a <b>photo ID</b> to verify your identity
-        before the course starts.
+        <b>{% trans "Note:" %}</b>{% trans "You will need a " %}
+        <b>{% trans "webcam" %}</b>{% trans " and a " %}
+        <b>{% trans "photo ID" %}</b>{% trans " to verify your identity before the course starts on " %}
+        {{course.start_date}}.
+    </div>
+    <div class="row help">
+        <p><b>{% trans "Have questions?" %}</b></p>
+        <p>{% trans "Please read " %}<a href="{{faq_link}}" target="_blank">{% trans "our FAQs to view common questions about our certificates." %}</a></p>
     </div>
 {% else %}
     {% block emptybasket %}
