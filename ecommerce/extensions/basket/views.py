@@ -6,6 +6,7 @@ from django.http import HttpResponseRedirect, HttpResponseBadRequest, HttpRespon
 from oscar.apps.basket.views import *  # pylint: disable=wildcard-import, unused-wildcard-import
 
 from ecommerce.coupons.views import get_voucher
+from ecommerce.extensions.api.data import get_lms_footer
 from ecommerce.extensions.basket.utils import prepare_basket
 from ecommerce.extensions.payment.helpers import get_processor_class
 from ecommerce.extensions.partner.shortcuts import get_partner_for_site
@@ -59,7 +60,8 @@ class BasketSummaryView(BasketView):
 
         context.update({
             'payment_processors': self.get_payment_processors(),
-            'homepage_url': get_lms_url('')
+            'homepage_url': get_lms_url(''),
+            'footer': get_lms_footer()
         })
         return context
 
