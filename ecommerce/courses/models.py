@@ -216,9 +216,9 @@ class Course(models.Model):
         if self.certificate_type_for_mode(certificate_type) == 'professional':
             id_verification_required_query = Q(
                 attributes__name='id_verification_required',
-                attribute_values__value_boolean= not id_verification_required
+                attribute_values__value_boolean=not id_verification_required
             )
-            
+
             # If professional course with different id_verification_required exists and
             # with no orders associated.
             seats.annotate(orders=Count('line')).filter(
