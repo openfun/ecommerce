@@ -100,8 +100,11 @@ class CourseMigrationTestMixin(CourseCatalogTestMixin):
         self.assertEqual(seat.attr.course_key, self.course_id)
         self.assertEqual(seat.attr.id_verification_required, Course.is_mode_verified(mode))
 
-    def assert_course_migrated(self):
-        """ Verify the course was migrated and saved to the database. """
+    def assert_course_migrated_without_stale_products_without_stale_products(self):
+        """
+        Verify the course was migrated wihtout stale products and saved to
+        the database.
+        """
         course = Course.objects.get(id=self.course_id)
         seats = course.seat_products
 
@@ -303,7 +306,7 @@ class CommandTests(CourseMigrationTestMixin, TestCase):
             # Verify that the migrated course was published back to the LMS
             self.assertTrue(mock_publish.called)
 
-        self.assert_course_migrated()
+        self.assert_course_migrated_without_stale_products()
 
     @httpretty.activate
     def test_handle_with_no_partner(self):

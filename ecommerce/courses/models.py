@@ -2,7 +2,7 @@ from __future__ import unicode_literals
 import logging
 
 from django.db import models, transaction
-from django.db.models import Q
+from django.db.models import Q, Count
 from django.utils.translation import ugettext_lazy as _
 from oscar.core.loading import get_model
 from simple_history.models import HistoricalRecords
@@ -214,13 +214,16 @@ class Course(models.Model):
         stock_record.save()
 
         if self.certificate_type_for_mode(certificate_type) == 'professional':
-            for single_seat in seats:
-                # If professional course with different id_verification_required exists and
-                # with no orders associated.
-                if (
-                        seat.attr.id_verification_required != single_seat.attr.id_verification_required and
-                        not single_seat.line_set.exists()
-                ):
-                    single_seat.delete()
+            id_verification_required_query = Q(
+                attributes__name='id_verification_required',
+                attribute_values__value_boolean= not id_verification_required
+            )
+            
+            # If professional course with different id_verification_required exists and
+            # with no orders associated.
+            seats.annotate(orders=Count('line')).filter(
+                id_verification_required_query,
+                orders=0
+            ).delete()
 
         return seat
