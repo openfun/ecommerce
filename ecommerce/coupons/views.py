@@ -134,7 +134,7 @@ class CouponOfferView(TemplateView):
                     'benefit_value': benefit_value,
                     'course': course,
                     'code': code,
-                    'footer': footer
+                    'footer': footer,
                     'price': price,
                     'new_price': "%.2f" % new_price,
                     'verified': (product.attr.certificate_type == 'verified'),

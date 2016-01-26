@@ -1,11 +1,16 @@
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponseBadRequest
+
+from oscar.core.loading import get_class
+
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from ecommerce.extensions.payment.helpers import get_processor_class_by_name
 from ecommerce.extensions.api.serializers import CheckoutSerializer
+
+Applicator = get_class('offer.utils', 'Applicator')
 
 
 class CheckoutView(APIView):
@@ -25,10 +30,13 @@ class CheckoutView(APIView):
         except ObjectDoesNotExist:
             return HttpResponseBadRequest('Basket [{}] not found'.format(basket_id))
 
-        # Freeze the basket so that it cannot be modified
         basket.strategy = request.strategy
-        basket.freeze()
 
+        # Re-apply any offers that are in the basket so the total is correct.
+        Applicator().apply(basket, self.request.user, self.request)
+
+        # Freeze the basket so that it cannot be modified
+        basket.freeze()
         # Return the payment info
         payment_processor = get_processor_class_by_name(payment_processor)()
         parameters = payment_processor.get_transaction_parameters(basket, request=request)
