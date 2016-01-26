@@ -18,7 +18,7 @@
         .basket-items {
             border-bottom: 1px solid #ddd;
 
-            p {
+            .title {
                 font-weight: bold;
             }
 
@@ -26,17 +26,32 @@
                 padding-bottom: 30px;
 
                 .course_name,
+                .old-price,
                 .price {
+                    margin: 0;
+
                     font-size: 20px;
                     font-weight: bold;
                 }
 
-                .course_image img {
-                    margin: 0 auto;
+                .course_description {
+                    font-size: 14px;
                 }
 
+                .course_image img {
+                    margin: 0 auto;
+
+                    width: 100%;
+                }
+
+                .old-price,
                 .price {
                     @include text-align(right);
+                }
+
+                .old-price {
+                    color: gray;
+                    text-decoration: line-through;
                 }
 
                 .remove-code {
@@ -48,8 +63,21 @@
         .total {
             padding-top: 20px;
 
+            p.voucher {
+                margin: 0 20px;
+
+                color: gray;
+            }
+
             .use_voucher {
                 @include float(left);
+
+                #id_code {
+                    border: 1px solid #c8c8c8;
+                    border-radius: 4px;
+
+                    padding: 4.5px 12px;
+                }
             }
 
             #basket_totals {
@@ -80,5 +108,9 @@
         .help {
             margin-top: 20px;
         }
+    }
+
+    .green {
+        color: green;
     }
 }
