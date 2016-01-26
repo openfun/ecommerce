@@ -100,7 +100,7 @@ class CourseMigrationTestMixin(CourseCatalogTestMixin):
         self.assertEqual(seat.attr.course_key, self.course_id)
         self.assertEqual(seat.attr.id_verification_required, Course.is_mode_verified(mode))
 
-    def assert_course_migrated_without_stale_products_without_stale_products(self):
+    def assert_course_migrated_without_stale_products(self):
         """
         Verify the course was migrated wihtout stale products and saved to
         the database.
