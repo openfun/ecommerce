@@ -19,7 +19,9 @@
 {% endblock %}
 
 {% block footer %}
-    {% autoescape off %}
-        {{ footer }}
-    {% endautoescape %}
+    {% if footer %}
+        {% autoescape off %}
+            {{ footer }}
+        {% endautoescape %}
+    {% endif %}
 {% endblock footer %}

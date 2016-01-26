@@ -70,7 +70,7 @@ class BasketSummaryView(BasketView):
                 logger.exception('Could not get course information. [%s]', e)
 
         context.update({
-            'product': course,
+            'course': course,
             'payment_processors': self.get_payment_processors(),
             'homepage_url': get_lms_url(''),
             'footer': get_lms_footer()
