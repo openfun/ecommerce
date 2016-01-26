@@ -37,8 +37,7 @@
         <p>
             <b class="total-price">{% trans "Total: $" %}{{ new_price }}</b>
         </p>
-        <a href="{% url 'coupons:redeem' %}?code={{ code }}" class="btn btn-primary">{% trans "Checkout with PayPal" %}</a>
-        <a href="{% url 'coupons:redeem' %}?code={{ code }}" class="btn btn-primary">{% trans "Checkout" %}</a>
+        <a href="{% url 'coupons:redeem' %}?code={{ code }}" class="btn btn-primary">{% trans "Add to basket" %}</a>
     </div>
     {% if verified %}
     <div class="alert alert-info note">
