@@ -231,6 +231,9 @@ define([
 
             disableNonEditableFields: function () {
                 this.$el.find('input[name=title]').attr('disabled', true);
+                this.$el.find('select[name=code_type]').attr('disabled', true);
+                this.$el.find('select[name=voucher_type]').attr('disabled', true);
+                this.$el.find('input[name=quantity]').attr('disabled', true);
                 this.$el.find('input[name=client_username]').attr('disabled', true);
                 this.$el.find('input[name=price]').attr('disabled', true);
                 this.$el.find('input[name=course_id]').attr('disabled', true);
