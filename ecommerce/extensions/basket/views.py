@@ -49,8 +49,7 @@ class BasketSingleItemView(View):
         prepare_basket(request, request.user, product, voucher)
 
         # Redirect to payment page
-        url = reverse('basket:summary')
-        return HttpResponseRedirect(url+'?sku='+sku, status=303)
+        return HttpResponseRedirect(reverse('basket:summary'), status=303)
 
 
 class BasketSummaryView(BasketView):
