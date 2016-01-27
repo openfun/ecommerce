@@ -56,21 +56,22 @@ class BasketSingleItemView(View):
 class BasketSummaryView(BasketView):
     def get_context_data(self, **kwargs):
         context = super(BasketSummaryView, self).get_context_data(**kwargs)
-        sku = self.request.GET.get('sku', None)
-        partner = get_partner_for_site(self.request)
-        product, _ = get_product_from_sku(partner=partner, sku=sku)
-        if product:
-            api = EdxRestApiClient(
-                get_lms_url('api/courses/v1/'),
-                )
+        lines = context['line_list']
+        courses = {}
+        api = EdxRestApiClient(
+            get_lms_url('api/courses/v1/'),
+        )
+        for line in lines:
+            course_id = line.product.course_id
             try:
-                course = api.courses(product.course_id).get()
+                course = api.courses(course_id).get()
                 course['image_url'] = get_lms_url(course['media']['course_image']['uri'])
+                line.course = course
             except SlumberHttpBaseException as e:
                 logger.exception('Could not get course information. [%s]', e)
 
         context.update({
-            'course': course,
+            'course': courses,
             'payment_processors': self.get_payment_processors(),
             'homepage_url': get_lms_url(''),
             'footer': get_lms_footer()

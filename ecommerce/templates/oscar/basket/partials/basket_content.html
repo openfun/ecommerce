@@ -20,11 +20,11 @@
                         <div class="row">
                             <div class="col-sm-2 course_image">
                                 {{ form.id }}
-                                    <img class="thumbnail" src="{{ course.image_url }}" alt="{{ product.get_title }}"/>
+                                    <img class="thumbnail" src="{{ line.course.image_url }}" alt="{{ line.course.name }}"/>
                             </div>
                             <div class="col-sm-6">
-                                <p class="course_name">{{ course.name }} - {{ course.org }} ({{ course.number }})</p>
-                                <p class="course_description">{{ course.short_description }}</p>
+                                <p class="course_name">{{ line.course.name }} - {{ line.course.org }} ({{ line.course.number }})</p>
+                                <p class="course_description">{{ line.course.short_description }}</p>
                             </div>
                             {% if line.has_discount %}
                                 <div class="col-sm-3 discount">
@@ -40,7 +40,7 @@
                                     </div>
                                 </div>
                             {% endif %}
-                            <div class="col-sm-1 price {% if line.has_discount %}green{% endif %}">
+                            <div class="price {% if line.has_discount %}green{% endif %}">
                                 {% if line.is_tax_known %}
                                     {{ line.line_price_incl_tax_incl_discounts|currency:line.price_currency }}
                                 {% else %}
@@ -63,13 +63,17 @@
                                 {% blocktrans with voucher_code=voucher.code %}
                                     Promotion code {{voucher_code}} applied
                                 {% endblocktrans %}
+                                <form action="{% url 'basket:vouchers-remove' pk=voucher.id %}" method="POST">
+                                    {% csrf_token %}
+                                    <button class="remove-voucher" type="submit"><i class="fa fa-times"></i></button>
+                                </form>
                                 </p>
                             {% endfor %}
                         </div>
                     {% else %}
                         {# Hide the entire section if a custom BasketView doesn't pass in a voucher form #}
                         {% if voucher_form %}
-                            <div class="use_voucher col-sm-6">
+                            <div class="use-voucher col-sm-6">
                                 <p id="voucher_form_link"><a href="#voucher">{% trans "Apply a promotion code" %}</a></p>
 
                                 <div id="voucher_form_container">
@@ -109,10 +113,9 @@
 
         <div class="row verification-note">
             <span><i class="fa fa-exclamation-circle"></i></span>
-            <b>{% trans "Note:" %}</b>{% trans "You will need a " %}
+            <b>{% trans "Note:" %}</b>{% trans " You will need a " %}
             <b>{% trans "webcam" %}</b>{% trans " and a " %}
-            <b>{% trans "photo ID" %}</b>{% trans " to verify your identity before the course starts on " %}
-            {{ course.start_display }}.
+            <b>{% trans "photo ID" %}</b>{% trans " to verify your identity before the course starts. " %}
         </div>
         <div class="row help">
             <p><b>{% trans "Have questions?" %}</b></p>
