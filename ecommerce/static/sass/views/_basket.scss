@@ -54,6 +54,10 @@
                     text-decoration: line-through;
                 }
 
+                .price {
+                    padding: 0 15px;
+                }
+
                 .remove-code {
                     display: none;
                 }
@@ -64,12 +68,23 @@
             padding-top: 20px;
 
             p.voucher {
+                @include float(left);
+
                 margin: 0 20px;
 
                 color: gray;
             }
 
-            .use_voucher {
+            .remove-voucher {
+                border: none;
+
+                background: none;
+                padding: 0;
+
+                color: red;
+            }
+
+            .use-voucher {
                 @include float(left);
 
                 #id_code {
