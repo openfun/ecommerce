@@ -63,6 +63,4 @@ def get_product_from_sku(partner, sku):
         msg = 'SKU [{sku}] does not exist for partner [{name}].'.format(sku=sku, name=partner.name)
         return None, msg
 
-    product = stock_record.product
-
-    return product, None
+    return stock_record.product, None
