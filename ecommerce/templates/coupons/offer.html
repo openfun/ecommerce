@@ -9,7 +9,7 @@
         {% if error %}
             {% include "coupons/_offer_error.html" %}
         {% else %}
-            {% if benefit_type == '%' and benefit_value == 100.00 %}
+            {% if benefit_type == 'Percentage' and benefit_value == 100.00 %}
                 {% include "coupons/_offer_enrollment.html" %}
             {% else %}
                 {% include "coupons/_offer_discount.html" %}
