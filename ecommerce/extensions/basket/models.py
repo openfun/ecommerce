@@ -16,7 +16,7 @@ class Basket(AbstractBasket):
         return OrderNumberGenerator().order_number(self)
 
     @classmethod
-    def get_basket(cls, user, site):
+    def get_basket(cls, user, site, new_basket=False):
         """Retrieve the basket belonging to the indicated user.
 
         If no such basket exists, create a new one. If multiple such baskets exist,
@@ -31,6 +31,9 @@ class Basket(AbstractBasket):
             for stale_basket in stale_baskets:
                 # Don't add line quantities when merging baskets
                 basket.merge(stale_basket, add_quantities=False)
+            if new_basket:
+                basket.delete()
+                basket = cls.objects.create(site=site, owner=user)
 
         # Assign the appropriate strategy class to the basket
         basket.strategy = Selector().strategy(user=user)
