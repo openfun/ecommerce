@@ -428,3 +428,6 @@ class CheckoutSerializer(serializers.Serializer):
     payment_form_data = serializers.SerializerMethodField()
     payment_page_url = serializers.URLField()
     payment_processor = serializers.CharField()
+
+    def get_payment_form_data(self, obj):
+        return obj['payment_form_data']
