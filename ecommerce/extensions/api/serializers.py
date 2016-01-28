@@ -422,3 +422,9 @@ class CouponSerializer(ProductPaymentInfoMixin, serializers.ModelSerializer):
     class Meta(object):
         model = Product
         fields = ('id', 'title', 'coupon_type', 'last_edited', 'seats', 'client', 'price', 'vouchers',)
+
+
+class CheckoutSerializer(serializers.Serializer):
+    payment_form_data = serializers.SerializerMethodField()
+    payment_page_url = serializers.URLField()
+    payment_processor = serializers.CharField()
