@@ -99,8 +99,6 @@ class CybersourceNotifyView(EdxOrderPlacementMixin, View):
             )
 
             basket = self._get_basket(basket_id)
-            # Need to apply offers as they are not persisted
-            Applicator().apply(basket, basket.owner)
 
             if not basket:
                 logger.error('Received payment for non-existent basket [%s].', basket_id)
@@ -202,6 +200,8 @@ class PaypalPaymentExecutionView(EdxOrderPlacementMixin, View):
                 transaction_id=payment_id
             ).basket
             basket.strategy = strategy.Default()
+            # Need to apply offers as they are not persisted
+            Applicator().apply(basket, basket.owner)
             return basket
         except MultipleObjectsReturned:
             logger.exception(u"Duplicate payment ID [%s] received from PayPal.", payment_id)
