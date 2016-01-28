@@ -258,7 +258,7 @@ class CouponRedeemViewTests(TestCase):
         create_coupon(catalog=self.catalog, code='COUPONTEST', benefit_value=0)
         url = self.redeem_url + '?code={}'.format('COUPONTEST')
         response = self.client.get(url)
-        self.assertEqual(str(response.context['error']), _('Basket total not $0, current value = $50.00'))
+        self.assertIsInstance(response, HttpResponseRedirect)
 
     def test_order_not_completed(self):
         """ Verify a response message is returned when an order is not completed. """
