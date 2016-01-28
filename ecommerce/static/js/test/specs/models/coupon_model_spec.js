@@ -48,7 +48,8 @@ define([
                 benefit_value: 25,
                 course_id: 'a/b/c',
                 seat_type: 'verified',
-                course: course
+                course: course,
+                price: 100
             },
             enrollment = {
                 title: 'Test Enrollment',
@@ -115,7 +116,6 @@ define([
                     expect($.ajax).toHaveBeenCalled();
                     args = $.ajax.calls.argsFor(0);
                     ajaxData = JSON.parse(args[0].data);
-                    expect(ajaxData.price).toEqual(0);
                     expect(ajaxData.quantity).toEqual(1);
                 });
             });

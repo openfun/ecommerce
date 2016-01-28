@@ -161,11 +161,9 @@ define([
                     }.bind(this);
 
                 if (couponType === 'discount') {
-                    formGroup('[name=price]').addClass('hidden');
                     formGroup('[name=benefit_value]').removeClass('hidden');
                 } else {
                     // enrollment
-                    formGroup('[name=price]').removeClass('hidden');
                     formGroup('[name=benefit_value]').addClass('hidden');
                 }
 

@@ -32,7 +32,7 @@ define([
                 quantity: 1,
                 stock_record_ids: [],
                 code: '',
-                price: '0'
+                price: 0
             },
 
             validation: {
@@ -126,17 +126,16 @@ define([
                 data.client_username = this.get('client');
                 data.start_date = moment.utc(this.get('start_date'));
                 data.end_date = moment.utc(this.get('end_date'));
+                data.price = this.get('price');
 
                 // Enrollment code always gives 100% discount
                 switch (this.get('coupon_type')) {
                 case 'enrollment':
                     // this is the price paid for the code(s)
-                    data.price = this.get('price');
                     data.benefit_type = 'Percentage';
                     data.benefit_value = 100;
                 break;
                 case 'discount':
-                    data.price = 0;
                     data.benefit_type = this.get('benefit_type');
                     data.benefit_value = this.get('benefit_value');
                 break;
