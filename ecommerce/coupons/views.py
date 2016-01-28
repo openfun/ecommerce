@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 import logging
 
 from django.contrib.auth.decorators import login_required
+from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django.utils.decorators import method_decorator
 from django.utils.translation import ugettext_lazy as _
@@ -199,30 +200,12 @@ class CouponRedeemView(EdxOrderPlacementMixin, View):
             )
         else:
             sku = StockRecord.objects.get(product=product).partner_sku
-            api = EdxRestApiClient(
-                get_lms_url('api/commerce/v1/'),
+            url = '{url}?sku={sku}&code={code}'.format(
+                url=reverse('basket:single-item'),
+                sku=sku,
+                code=code
             )
-            try:
-                # Always get the last entry
-                commerce_configuration = api.commerce_configuration.get()['results'][-1]
-                logger.info("Using commerce configuration [%s]", commerce_configuration['id'])
-                if commerce_configuration['enabled']:
-                    url = '{config_url}?sku={sku}&code={code}'.format(
-                        config_url=commerce_configuration['single_course_checkout_page'],
-                        sku=sku,
-                        code=code
-                    )
-                    return HttpResponseRedirect(url)
-            except SlumberHttpBaseException as e:
-                logger.exception('Could not get commerce configuration. [%s]', e)
-
-            return render(
-                request,
-                template_name,
-                {'error': _('Basket total not $0, current value = ${basket_price}'.format(
-                    basket_price=basket.total_excl_tax
-                ))}
-            )
+            return HttpResponseRedirect(url)
 
         if order.status is ORDER.COMPLETE:
             return HttpResponseRedirect(get_lms_url(''))
