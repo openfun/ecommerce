@@ -71,6 +71,8 @@ class CybersourceNotifyView(EdxOrderPlacementMixin, View):
             basket_id = int(basket_id)
             basket = Basket.objects.get(id=basket_id)
             basket.strategy = strategy.Default()
+            # Need to apply offers again to the basket as they are not persisted
+            Applicator().apply(basket, basket.owner)
             return basket
         except (ValueError, ObjectDoesNotExist):
             return None
@@ -97,6 +99,8 @@ class CybersourceNotifyView(EdxOrderPlacementMixin, View):
             )
 
             basket = self._get_basket(basket_id)
+            # Need to apply offers as they are not persisted
+            Applicator().apply(basket, basket.owner)
 
             if not basket:
                 logger.error('Received payment for non-existent basket [%s].', basket_id)
@@ -229,8 +233,6 @@ class PaypalPaymentExecutionView(EdxOrderPlacementMixin, View):
         except:  # pylint: disable=bare-except
             logger.exception('Attempts to handle payment for basket [%d] failed.', basket.id)
             return redirect(receipt_url)
-
-        Applicator().apply(basket)
 
         try:
             shipping_method = NoShippingRequired()
