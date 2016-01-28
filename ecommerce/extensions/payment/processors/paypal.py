@@ -6,7 +6,7 @@ from urlparse import urljoin
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from oscar.apps.payment.exceptions import GatewayError
-from oscar.core.loading import get_class, get_model
+from oscar.core.loading import get_model
 import paypalrestsdk
 import waffle
 
@@ -18,7 +18,6 @@ from ecommerce.extensions.payment.utils import middle_truncate
 
 logger = logging.getLogger(__name__)
 
-Applicator = get_class('offer.utils', 'Applicator')
 PaymentEvent = get_model('order', 'PaymentEvent')
 PaymentEventType = get_model('order', 'PaymentEventType')
 PaymentProcessorResponse = get_model('payment', 'PaymentProcessorResponse')
@@ -73,7 +72,6 @@ class Paypal(BasePaymentProcessor):
             GatewayError: Indicates a general error or unexpected behavior on the part of PayPal which prevented
                 a payment from being created.
         """
-        Applicator().apply(basket, request.user, request)
 
         return_url = urljoin(self.ecommerce_url_root, reverse('paypal_execute'))
         data = {
