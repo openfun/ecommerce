@@ -9,7 +9,7 @@ import waffle
 
 from ecommerce.extensions.analytics.utils import audit_log
 
-
+Applicator = get_class('offer.utils', 'Applicator')
 post_checkout = get_class('checkout.signals', 'post_checkout')
 
 
@@ -70,6 +70,7 @@ class EdxOrderPlacementMixin(OrderPlacementMixin):
         and basket submission in a transaction. Should be used only in
         the context of an exception handler.
         """
+        Applicator().apply(basket, user)
         with transaction.atomic():
             order = self.place_order(
                 order_number=order_number,
