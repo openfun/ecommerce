@@ -100,9 +100,11 @@ define([
             },
 
             updateSeatData: function () {
-                var seat_data = this.get('seats')[0];
-                this.set('seat_type', seat_data.attribute_values[0].value);
-                this.set('course_id', seat_data.attribute_values[1].value);
+                var seat_data = this.get('seats')[0].attribute_values,
+                    seat_type = _.findWhere(seat_data, {'name': 'certificate_type'}),
+                    course_id = _.findWhere(seat_data, {'name': 'course_key'});
+                this.set('seat_type', seat_type ? seat_type.value : '');
+                this.set('course_id', course_id ? course_id.value : '');
             },
 
             updateVoucherData: function () {
