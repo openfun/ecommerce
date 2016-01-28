@@ -220,8 +220,6 @@ class PaypalPaymentExecutionView(EdxOrderPlacementMixin, View):
 
         receipt_url = u'{}?orderNum={}'.format(self.payment_processor.receipt_url, basket.order_number)
 
-        Applicator().apply(basket)
-
         try:
             with transaction.atomic():
                 try:
@@ -231,6 +229,8 @@ class PaypalPaymentExecutionView(EdxOrderPlacementMixin, View):
         except:  # pylint: disable=bare-except
             logger.exception('Attempts to handle payment for basket [%d] failed.', basket.id)
             return redirect(receipt_url)
+
+        Applicator().apply(basket)
 
         try:
             shipping_method = NoShippingRequired()
