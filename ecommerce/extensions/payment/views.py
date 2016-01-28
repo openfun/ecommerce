@@ -23,6 +23,7 @@ from ecommerce.extensions.payment.processors.paypal import Paypal
 
 logger = logging.getLogger(__name__)
 
+Applicator = get_class('offer.utils', 'Applicator')
 Basket = get_model('basket', 'Basket')
 BillingAddress = get_model('order', 'BillingAddress')
 Country = get_model('address', 'Country')
@@ -218,6 +219,8 @@ class PaypalPaymentExecutionView(EdxOrderPlacementMixin, View):
             return redirect(self.payment_processor.error_url)
 
         receipt_url = u'{}?orderNum={}'.format(self.payment_processor.receipt_url, basket.order_number)
+
+        Applicator().apply(basket)
 
         try:
             with transaction.atomic():
