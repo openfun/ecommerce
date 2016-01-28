@@ -108,7 +108,7 @@ class CourseMigrationTestMixin(CourseCatalogTestMixin):
         course = Course.objects.get(id=self.course_id)
         seats = course.seat_products
 
-        # Verify that all modes are migrated.
+        # Verify that all modes are migrated except stale modes.
         self.assertEqual(len(seats), len(self.prices) - 1)
 
         parent = course.products.get(structure=Product.PARENT)
