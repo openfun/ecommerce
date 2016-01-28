@@ -216,6 +216,20 @@ class CouponRedeemViewTests(TestCase):
         self.catalog = Catalog.objects.create(partner=self.partner)
         self.catalog.stock_records.add(StockRecord.objects.get(product=self.seat))
 
+    def create_and_test_coupon(self):
+        """  Creates enrollment code coupon.  """
+        create_coupon(catalog=self.catalog, code='COUPONTEST')
+        self.assertEqual(Voucher.objects.filter(code='COUPONTEST').count(), 1)
+
+    def assert_redirect_to_basket(self):
+        """  Verify redirect to basket summary.  """
+        sku = StockRecord.objects.get(product=self.seat).partner_sku
+        test_server_url = self.get_full_url(path=reverse('basket:single-item'))
+        expected_url = '{url}?sku={sku}&code=COUPONTEST'.format(url=test_server_url, sku=sku)
+        url = self.redeem_url + '?code={}'.format('COUPONTEST')
+        response = self.client.get(url)
+        self.assertRedirects(response, expected_url, target_status_code=303)
+
     def test_login_required(self):
         """ Users are required to login before accessing the view. """
         self.client.logout()
@@ -234,43 +248,32 @@ class CouponRedeemViewTests(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.context['error'], _('Coupon does not exist'))
 
-    def test_basket_not_free(self):
-        """ Verify a response message is returned when the basket is not free. """
-        self.assertEqual(StockRecord.objects.get(product=self.seat).price_excl_tax, Decimal('50.00'))
-        create_coupon(catalog=self.catalog, code='COUPONTEST', benefit_value=0)
-        url = self.redeem_url + '?code={}'.format('COUPONTEST')
-        response = self.client.get(url)
-        self.assertIsInstance(response, HttpResponseRedirect)
-
     def test_order_not_completed(self):
         """ Verify a response message is returned when an order is not completed. """
-        create_coupon(catalog=self.catalog, code='COUPONTEST')
-        self.assertEqual(Voucher.objects.filter(code='COUPONTEST').count(), 1)
+        self.create_and_test_coupon()
 
         url = self.redeem_url + '?code={}'.format('COUPONTEST')
         response = self.client.get(url)
         self.assertEqual(response.context['error'], _('Error when trying to redeem code'))
 
-    @httpretty.activate
-    def test_redirect(self):
-        """ Verify a redirect happens when valid info is provided. """
-        create_coupon(catalog=self.catalog, code='COUPONTEST')
-        self.assertEqual(Voucher.objects.filter(code='COUPONTEST').count(), 1)
+    def test_basket_redirect_discount_code(self):
+        """ Verify a redirect happens when a discount code is provided. """
+        self.assertEqual(StockRecord.objects.get(product=self.seat).price_excl_tax, Decimal('50.00'))
+        create_coupon(catalog=self.catalog, code='COUPONTEST', benefit_value=5)
+        self.assert_redirect_to_basket()
 
+    @httpretty.activate
+    def test_basket_redirect_enrollment_code(self):
+        """ Verify a redirect happens when a enrollment code is provided. """
+        self.create_and_test_coupon()
         httpretty.register_uri(httpretty.POST, settings.ENROLLMENT_API_URL, status=200)
-        url = self.redeem_url + '?code={}'.format('COUPONTEST')
-        response = self.client.get(url)
-        self.assertIsInstance(response, HttpResponseRedirect)
+        self.assert_redirect_to_basket()
 
     @httpretty.activate
     def test_multiple_vouchers(self):
         """ Verify a redirect happens when a basket with already existing vouchers is used. """
-        create_coupon(catalog=self.catalog, code='COUPONTEST')
-        self.assertEqual(Voucher.objects.filter(code='COUPONTEST').count(), 1)
+        self.create_and_test_coupon()
         basket = Basket.get_basket(self.user, self.site)
         basket.vouchers.add(Voucher.objects.get(code='COUPONTEST'))
         httpretty.register_uri(httpretty.POST, settings.ENROLLMENT_API_URL, status=200)
-
-        url = self.redeem_url + '?code={}'.format('COUPONTEST')
-        response = self.client.get(url)
-        self.assertIsInstance(response, HttpResponseRedirect)
+        self.assert_redirect_to_basket()
