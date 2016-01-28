@@ -1,9 +1,13 @@
 from __future__ import unicode_literals
+import logging
 
 from django.conf import settings
 from django.http import HttpResponseRedirect, HttpResponseBadRequest, HttpResponseServerError
+from django.core.urlresolvers import reverse
 
 from oscar.apps.basket.views import *  # pylint: disable=wildcard-import, unused-wildcard-import
+from edx_rest_api_client.client import EdxRestApiClient
+from edx_rest_api_client.exceptions import SlumberHttpBaseException
 
 from ecommerce.coupons.views import get_voucher
 from ecommerce.extensions.api.data import get_lms_footer
@@ -12,10 +16,9 @@ from ecommerce.extensions.payment.helpers import get_processor_class
 from ecommerce.extensions.partner.shortcuts import get_partner_for_site
 from ecommerce.settings import get_lms_url
 
-from edx_rest_api_client.client import EdxRestApiClient
-from edx_rest_api_client.exceptions import SlumberHttpBaseException
 
 Basket = get_model('basket', 'Basket')
+logger = logging.getLogger(__name__)
 Selector = get_class('partner.strategy', 'Selector')
 StockRecord = get_model('partner', 'StockRecord')
 
