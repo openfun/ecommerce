@@ -1,11 +1,14 @@
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponseBadRequest
+from oscar.core.loading import get_class
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from ecommerce.extensions.payment.helpers import get_processor_class_by_name
 from ecommerce.extensions.api.serializers import CheckoutSerializer
+
+Applicator = get_class('offer.utils', 'Applicator')
 
 
 class CheckoutView(APIView):
@@ -27,6 +30,9 @@ class CheckoutView(APIView):
 
         # Freeze the basket so that it cannot be modified
         basket.strategy = request.strategy
+        Applicator().apply(basket, request.user, request)
+        basket.save()
+
         basket.freeze()
 
         # Return the payment info
