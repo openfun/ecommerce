@@ -41,7 +41,7 @@ define([
                 enrollment_code_data = {
                     'id': 10,
                     'title': 'Test Enrollment Code',
-                    'coupon_type': 'Enrollment code',
+                    'code_type': 'Enrollment code',
                     'last_edited': [
                         'user',
                         '2016-01-15T07:26:22.926Z'

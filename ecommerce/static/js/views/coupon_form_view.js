@@ -263,7 +263,6 @@ define([
 
                 // Avoid the need to create this jQuery object every time an alert has to be rendered.
                 this.$alerts = this.$el.find('.alerts');
-
                 if(this.editing) {
                     this.disableNonEditableFields();
                     this.$el.find('button[type=submit]').html(gettext('Save Changes'));
