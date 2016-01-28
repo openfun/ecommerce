@@ -263,7 +263,7 @@ define([
                 // Avoid the need to create this jQuery object every time an alert has to be rendered.
                 this.$alerts = this.$el.find('.alerts');
 
-                this.model.set('code_type', this.codeTypes[0].value);
+                this.model.set('coupon_type', this.codeTypes[0].value);
                 this.model.set('voucher_type', this.voucherTypes[0].value);
                 this.model.set('benefit_type', 'Percentage');
 

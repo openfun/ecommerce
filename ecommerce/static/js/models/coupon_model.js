@@ -49,7 +49,7 @@ define([
                 benefit_value: {
                     pattern: 'number',
                     required: function () {
-                        return this.get('code_type') === 'discount';
+                        return this.get('coupon_type') === 'discount';
                     }
                 },
                 start_date: function (val) {
@@ -128,7 +128,7 @@ define([
                 data.end_date = moment.utc(this.get('end_date'));
 
                 // Enrollment code always gives 100% discount
-                switch (this.get('code_type')) {
+                switch (this.get('coupon_type')) {
                 case 'enrollment':
                     // this is the price paid for the code(s)
                     data.price = this.get('price');

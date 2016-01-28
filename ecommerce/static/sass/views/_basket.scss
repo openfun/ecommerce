@@ -44,12 +44,25 @@
                     width: 100%;
                 }
 
+                .benefit {
+                    @include float(left);
+                    @include text-align(right);
+
+                    width: 48%;
+
+                    font-size: 20px;
+                }
+
                 .old-price,
                 .price {
                     @include text-align(right);
                 }
 
                 .old-price {
+                    @include float(right);
+
+                    width: 48%;
+
                     color: gray;
                     text-decoration: line-through;
                 }

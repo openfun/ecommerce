@@ -37,7 +37,7 @@ define([
             },
             discount = {
                 title: 'Test Discount',
-                code_type: 'discount',
+                coupon_type: 'discount',
                 client: 'test_client',
                 start_date: '2015-01-01T00:00:00Z',
                 end_date: '2016-01-01T00:00:00Z',
@@ -52,7 +52,7 @@ define([
             },
             enrollment = {
                 title: 'Test Enrollment',
-                code_type: 'enrollment',
+                coupon_type: 'enrollment',
                 client: 'test_client',
                 start_date: '2015-01-01T00:00:00Z',
                 end_date: '2016-01-01T00:00:00Z',

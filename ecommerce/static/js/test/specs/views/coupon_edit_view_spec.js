@@ -89,7 +89,7 @@ define([
             it('should display coupon details in form fields', function () {
                 var voucherType = view.$el.find('[name=voucher_type]');
                 expect(view.$el.find('[name=title]').val()).toEqual(model.get('title'));
-                expect(view.$el.find('[name=code_type]').val()).toEqual(model.get('code_type'));
+                expect(view.$el.find('[name=code_type]').val()).toEqual(model.get('coupon_type'));
                 expect(view.$el.find('[name=start_date]').val()).toEqual(Utils.stripTimezone(model.get('start_date')));
                 expect(view.$el.find('[name=end_date]').val()).toEqual(Utils.stripTimezone(model.get('end_date')));
                 expect(voucherType.children().length).toBe(3);

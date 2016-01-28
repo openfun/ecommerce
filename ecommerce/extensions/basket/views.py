@@ -69,11 +69,15 @@ class BasketSummaryView(BasketView):
             except SlumberHttpBaseException as e:
                 logger.exception('Could not get course information. [%s]', e)
 
+        applied_offers = self.request.basket.applied_offers()
+        benefit = applied_offers.values()[0].benefit if applied_offers else ''
+
         context.update({
+            'benefit': benefit,
             'course': courses,
             'payment_processors': self.get_payment_processors(),
             'homepage_url': get_lms_url(''),
-            'footer': get_lms_footer()
+            'footer': get_lms_footer(),
         })
         return context
 
