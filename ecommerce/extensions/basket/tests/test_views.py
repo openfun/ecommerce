@@ -1,49 +1,20 @@
 import datetime
-from decimal import Decimal
 import json
 
 import httpretty
 from django.core.urlresolvers import reverse
-import factory
 from oscar.core.loading import get_class, get_model
 from oscar.test import newfactories as factories
 import pytz
 
 from ecommerce.settings import get_lms_url
+from ecommerce.tests.factories import StockRecordFactory
 from ecommerce.tests.testcases import TestCase
+
 
 Basket = get_model('basket', 'Basket')
 Selector = get_class('partner.strategy', 'Selector')
-SiteConfiguration = get_model('core', 'SiteConfiguration')
-
-
-# TODO Create our own factories to support multi-tenancy
-class PartnerFactory(factory.DjangoModelFactory):
-    name = factory.Sequence(lambda n: 'Partner %d' % n)
-    short_code = factory.Sequence(lambda n: 'P_%d' % n)
-
-    class Meta:
-        model = get_model('partner', 'Partner')
-
-    @factory.post_generation
-    def users(self, create, extracted, **kwargs):
-        if not create:
-            return
-
-        if extracted:
-            for user in extracted:
-                self.users.add(user)
-
-
-class StockRecordFactory(factory.DjangoModelFactory):
-    partner = factory.SubFactory(PartnerFactory)
-    partner_sku = factory.Sequence(lambda n: 'unit%d' % n)
-    price_currency = "GBP"
-    price_excl_tax = Decimal('9.99')
-    num_in_stock = 100
-
-    class Meta:
-        model = get_model('partner', 'StockRecord')
+# SiteConfiguration = get_model('core', 'SiteConfiguration')
 
 
 class BasketSingleItemViewTests(TestCase):
