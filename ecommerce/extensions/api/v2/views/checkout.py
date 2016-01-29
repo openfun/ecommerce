@@ -18,7 +18,7 @@ class CheckoutView(APIView):
     """
     permission_classes = (IsAuthenticated,)
 
-    def post(self, request, format=None):
+    def post(self, request):
         basket_id = request.data['basket_id']
         payment_processor = request.data['payment_processor']
 

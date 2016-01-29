@@ -1,20 +1,20 @@
 import datetime
 from decimal import Decimal
 import json
-import httpretty
 
+import httpretty
 from django.core.urlresolvers import reverse
-from django.http import HttpResponseRedirect
-from ecommerce.tests.testcases import TestCase
 import factory
 from oscar.core.loading import get_class, get_model
 from oscar.test import newfactories as factories
 import pytz
+
 from ecommerce.settings import get_lms_url
+from ecommerce.tests.testcases import TestCase
 
 Basket = get_model('basket', 'Basket')
-SiteConfiguration = get_model('core', 'SiteConfiguration')
 Selector = get_class('partner.strategy', 'Selector')
+SiteConfiguration = get_model('core', 'SiteConfiguration')
 
 
 # TODO Create our own factories to support multi-tenancy
@@ -66,18 +66,18 @@ class BasketSingleItemViewTests(TestCase):
         expected_url = '{path}?next={basket_path}'.format(path=testserver_url, basket_path=self.path)
         self.assertRedirects(response, expected_url, target_status_code=302)
 
-    # TODO Add the partner to the request using middleware
+    # # TODO Add the partner to the request using middleware
     # def test_missing_partner(self):
     #     """ The view should return HTTP 500 if the site has no associated Partner. """
-        # site_configuration = SiteConfigurationFactory(partner__name='test', site__id=7, site__domain='test')
-        # site = site_configuration.site
-        # # site = SiteFactory()
-        # # site.siteconfiguration = site_configuration
-        # request = RequestFactory()
-        # request.site = site
+    #     site_configuration = SiteConfigurationFactory()
+    #     site = site_configuration.site
+    #     # site.siteconfiguration = site_configuration
+    #     request = RequestFactory()
+    #     request.site = site
 
-        # # response = BasketSingleItemView().get(request)
-    #     self.fail()
+    #     response = BasketSingleItemView().get(request)
+    #     self.assertEqual(response.status_code, 400)
+    #     # self.assertEqual(response.content, 1)
 
     def test_missing_sku(self):
         """ The view should return HTTP 400 if no SKU is provided. """
@@ -88,6 +88,7 @@ class BasketSingleItemViewTests(TestCase):
         """ The view should return HTTP 400 if the product is not available for purchase. """
         product = self.stock_record.product
         product.expires = pytz.utc.localize(datetime.datetime.min)
+        product.save()
         self.assertFalse(Selector().strategy().fetch_for_product(product).availability.is_available_to_buy)
 
         url = '{path}?sku={sku}'.format(path=self.path, sku=self.stock_record.partner_sku)
@@ -104,7 +105,6 @@ class BasketSingleItemViewTests(TestCase):
                     "uri": "/asset-v1:edX+DemoX+Demo_Course+type@asset+block@images_course_image.jpg"
                 }
             },
-            "name": "edX Demonstration Course",
         }
         course_info_json = json.dumps(course_info)
         course_url = get_lms_url('api/courses/v1/courses/')
@@ -121,7 +121,7 @@ class BasketSingleItemViewTests(TestCase):
         """ The user's latest Basket should contain one instance of the specified product and be frozen. """
         self.assert_view_redirects_to_checkout_payment()
 
-        basket = Basket.get_basket(self.user)
+        basket = Basket.get_basket(self.user, self.site)
         self.assertEqual(basket.status, Basket.OPEN)
         self.assertEqual(basket.lines.count(), 1)
         self.assertEqual(basket.lines.first().product, self.stock_record.product)
