@@ -5,7 +5,6 @@ import json
 import ddt
 from django.conf import settings
 from django.core.urlresolvers import reverse
-from django.http import HttpResponseRedirect
 from django.utils.timezone import now
 from django.utils.translation import ugettext_lazy as _
 import httpretty
