@@ -238,14 +238,11 @@ class CouponRedeemViewTests(TestCase):
         create_coupon(catalog=self.catalog, code='COUPONTEST')
         self.assertEqual(Voucher.objects.filter(code='COUPONTEST').count(), 1)
 
-    def assert_redirect_to_basket(self):
-        """  Verify redirect to basket summary.  """
-        sku = StockRecord.objects.get(product=self.seat).partner_sku
-        test_server_url = self.get_full_url(path=reverse('basket:single-item'))
-        expected_url = '{url}?sku={sku}&code=COUPONTEST'.format(url=test_server_url, sku=sku)
+    def assert_redirect(self, expected_url, target=200):
+        """  Verify redirect from redeem page to expected page.  """
         url = self.redeem_url + '?code={}'.format('COUPONTEST')
         response = self.client.get(url)
-        self.assertRedirects(response, expected_url, target_status_code=303)
+        self.assertRedirects(response, expected_url, status_code=302, target_status_code=target)
 
     def test_login_required(self):
         """ Users are required to login before accessing the view. """
@@ -277,20 +274,23 @@ class CouponRedeemViewTests(TestCase):
         """ Verify a redirect happens when a discount code is provided. """
         self.assertEqual(StockRecord.objects.get(product=self.seat).price_excl_tax, Decimal('50.00'))
         create_coupon(catalog=self.catalog, code='COUPONTEST', benefit_value=5)
-        self.assert_redirect_to_basket()
+        sku = StockRecord.objects.get(product=self.seat).partner_sku
+        test_server_url = self.get_full_url(path=reverse('basket:single-item'))
+        expected_url = '{url}?sku={sku}&code=COUPONTEST'.format(url=test_server_url, sku=sku)
+        self.assert_redirect(expected_url, 303)
 
     @httpretty.activate
     def test_basket_redirect_enrollment_code(self):
-        """ Verify a redirect happens when a enrollment code is provided. """
+        """ Verify a redirect to LMS happens happens when a enrollment code is provided. """
         self.create_and_test_coupon()
         httpretty.register_uri(httpretty.POST, settings.ENROLLMENT_API_URL, status=200)
-        self.assert_redirect_to_basket()
+        self.assert_redirect(settings.LMS_URL_ROOT)
 
     @httpretty.activate
     def test_multiple_vouchers(self):
-        """ Verify a redirect happens when a basket with already existing vouchers is used. """
+        """ Verify a redirect to LMS happens when a basket with already existing vouchers is used. """
         self.create_and_test_coupon()
         basket = Basket.get_basket(self.user, self.site)
         basket.vouchers.add(Voucher.objects.get(code='COUPONTEST'))
         httpretty.register_uri(httpretty.POST, settings.ENROLLMENT_API_URL, status=200)
-        self.assert_redirect_to_basket()
+        self.assert_redirect(settings.LMS_URL_ROOT)
