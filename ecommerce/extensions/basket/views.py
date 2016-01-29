@@ -64,7 +64,13 @@ class BasketSummaryView(BasketView):
         )
         for line in lines:
             course_id = line.product.course_id
-            line.seat_type = line.product.attr.certificate_type.capitalize()
+
+            try:
+                line.certificate_type = line.product.attr.certificate_type.capitalize()
+            except AttributeError as e:
+                line.certificate_type = None
+                logger.exception('Product has no certificate type. [%s]', e)
+
             try:
                 course = api.courses(course_id).get()
                 course['image_url'] = get_lms_url(course['media']['course_image']['uri'])
