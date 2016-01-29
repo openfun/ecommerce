@@ -59,12 +59,12 @@ class BasketSummaryView(BasketView):
     def get_context_data(self, **kwargs):
         context = super(BasketSummaryView, self).get_context_data(**kwargs)
         lines = context['line_list']
-        courses = {}
         api = EdxRestApiClient(
             get_lms_url('api/courses/v1/'),
         )
         for line in lines:
             course_id = line.product.course_id
+            line.seat_type = line.product.attr.certificate_type.capitalize()
             try:
                 course = api.courses(course_id).get()
                 course['image_url'] = get_lms_url(course['media']['course_image']['uri'])
@@ -77,7 +77,6 @@ class BasketSummaryView(BasketView):
 
         context.update({
             'benefit': benefit,
-            'course': courses,
             'payment_processors': self.get_payment_processors(),
             'homepage_url': get_lms_url(''),
             'footer': get_lms_footer(),
