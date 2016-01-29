@@ -16,7 +16,11 @@
                 <div class="basket-items">
                     {% for line in line_list %}
                         {% purchase_info_for_line request line as session %}
-                        <p class="title">{% trans "Enroll and Pursue a Verified Certificate in" %}</p>
+                        <p class="title">
+                            {% blocktrans with seat_type=line.seat_type %}
+                                Enroll and Pursue a {{seat_type}} Certificate in
+                            {% endblocktrans %}
+                        </p>
                         <div class="row">
                             <div class="col-sm-2 course_image">
                                 {{ form.id }}
