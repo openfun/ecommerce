@@ -9,6 +9,7 @@ import waffle
 
 from ecommerce.extensions.analytics.utils import audit_log
 
+
 post_checkout = get_class('checkout.signals', 'post_checkout')
 
 
@@ -37,7 +38,6 @@ class EdxOrderPlacementMixin(OrderPlacementMixin):
         events (using add_payment_event) so they can be
         linked to the order when it is saved later on.
         """
-
         source, payment_event = self.payment_processor.handle_processor_response(response, basket=basket)
 
         self.add_payment_source(source)
