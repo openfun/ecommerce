@@ -55,6 +55,12 @@ class BasketSingleItemViewTests(TestCase):
         response = self.client.get(self.path)
         self.assertEqual(response.status_code, 400)
 
+    def test_missing_product(self):
+        """ The view should return HTTP 400 if SKU with no product is provided. """
+        url = '{path}?sku={sku}'.format(path=self.path, sku='NONEXISTING')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 400)
+
     def test_unavailable_product(self):
         """ The view should return HTTP 400 if the product is not available for purchase. """
         product = self.stock_record.product
