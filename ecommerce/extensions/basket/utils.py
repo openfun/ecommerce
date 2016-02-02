@@ -32,15 +32,7 @@ def prepare_basket(request, user, product, voucher=None):
     if voucher:
         basket.vouchers.add(voucher)
         Applicator().apply(basket, user, request)
-        discounts = basket.offer_applications
-        # Look for discounts from this new voucher
-        for discount in discounts:
-            if discount['voucher'] and discount['voucher'] == voucher:
-                logger.info('Applied Voucher [%s] to basket.', voucher.code)
-                break
-            else:
-                logger.info('Voucher [%s] does not offer a discount.', voucher.code)
-                basket.vouchers.remove(voucher)
+        logger.info('Applied Voucher [%s] to basket.', voucher.code)
 
     return basket
 
