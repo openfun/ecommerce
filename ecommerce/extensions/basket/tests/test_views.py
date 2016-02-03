@@ -8,6 +8,7 @@ from django.test import override_settings
 from oscar.core.loading import get_class, get_model
 from oscar.test import newfactories as factories
 import pytz
+from requests.exceptions import ConnectionError
 from testfixtures import LogCapture
 from waffle.models import Switch
 
@@ -143,16 +144,17 @@ class BasketSummaryViewTests(TestCase):
         seat = self.course.create_or_update_seat('verified', True, 50, self.partner)
         self.prepare_basket(seat)
         course_url = get_lms_url('api/courses/v1/courses/')
-        with LogCapture(LOGGER_NAME) as l:
-            self.client.get(self.path)
-            l.check(
-                (
-                    LOGGER_NAME, 'ERROR',
-                    u'Could not get course information. [Client Error 404: {course_url}{course_id}/]'.format(
-                        course_url=course_url, course_id=self.course.id
+        with self.assertRaises(ConnectionError):
+            with LogCapture(LOGGER_NAME) as l:
+                self.client.get(self.path)
+                l.check(
+                    (
+                        LOGGER_NAME, 'ERROR',
+                        u'Could not get course information. [Client Error 404: {course_url}{course_id}/]'.format(
+                            course_url=course_url, course_id=self.course.id
+                        )
                     )
                 )
-            )
 
     @httpretty.activate
     @override_settings(PAYMENT_PROCESSORS=['ecommerce.extensions.payment.tests.processors.DummyProcessor'])
