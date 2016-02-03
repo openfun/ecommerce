@@ -219,8 +219,8 @@ class Course(models.Model):
                 attribute_values__value_boolean=not id_verification_required
             )
 
-            # If professional course with different id_verification_required exists and
-            # with no orders associated.
+            # Delete seats with a different verification requirement, assuming the seats
+            # have not been purchased.
             seats.annotate(orders=Count('line')).filter(
                 id_verification_required_query,
                 orders=0
