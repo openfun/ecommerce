@@ -14,7 +14,7 @@
                 {{ formset.management_form }}
 
                 <div class="basket-items">
-                    {% for line in line_list %}
+                    {% for line in lines %}
                         {% purchase_info_for_line request line as session %}
                         {% if line.certificate_type %}
                         <p class="certificate_type">

@@ -58,7 +58,7 @@ class BasketSingleItemView(View):
 class BasketSummaryView(BasketView):
     def get_context_data(self, **kwargs):
         context = super(BasketSummaryView, self).get_context_data(**kwargs)
-        lines = context['line_list']
+        lines = self.request.basket.lines.all()
         api = EdxRestApiClient(
             get_lms_url('api/courses/v1/'),
         )
@@ -86,6 +86,7 @@ class BasketSummaryView(BasketView):
             'payment_processors': self.get_payment_processors(),
             'homepage_url': get_lms_url(''),
             'footer': get_lms_footer(),
+            'lines': lines,
         })
         return context
 

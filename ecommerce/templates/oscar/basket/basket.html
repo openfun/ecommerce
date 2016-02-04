@@ -8,6 +8,10 @@
 {# Hide mini-basket so we don't have two baskets to keep in sync #}
 {% block mini_basket %}{% endblock %}
 
+{% block title %}
+{% trans "Basket" %}
+{% endblock title %}
+
 
 {% block javascript %}
     <script src="{% static 'js/pages/basket.js' %}"></script>
