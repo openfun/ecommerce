@@ -180,8 +180,7 @@ class CourseTests(CourseCatalogTestMixin, TestCase):
 
     def test_prof_ed_stale_product_removal(self):
         """
-        Verify that when professional-course is updated with id_verification_required
-        it will leaves no stale products.
+        Verify that stale professional education seats are deleted if they have not been purchased.
         """
         course = CourseFactory()
         course.create_or_update_seat('professional', False, 0, self.partner)
@@ -189,17 +188,17 @@ class CourseTests(CourseCatalogTestMixin, TestCase):
         # professional_product with verification
         course.create_or_update_seat('professional', True, 0, self.partner)
         self.assertEqual(course.products.count(), 2)
-        self.assertEqual(course.products.first().attr.id_verification_required, True)
+        product_mode = course.products.first()
+        self.assertEqual(product_mode.attr.id_verification_required, True)
+        self.assertEqual(product_mode.attr.certificate_type, 'professional')
 
     def test_prof_ed_stale_product_removal_with_orders(self):
         """
-        Verify that when professional-course is updated with id_verification_required
-        but having orders it will remain in system.
+        Verify that professional education seats are never deleted if they have been purchased.
         """
         user = self.create_user()
         course = CourseFactory()
         professional_product_no_verification = course.create_or_update_seat('professional', False, 0, self.partner)
-
         self.assertEqual(course.products.count(), 2)
 
         basket = BasketFactory(owner=user)
@@ -207,6 +206,12 @@ class CourseTests(CourseCatalogTestMixin, TestCase):
         create_order(basket=basket, user=user)
         course.create_or_update_seat('professional', True, 0, self.partner)
         self.assertEqual(course.products.count(), 3)
+        product_mode = course.products.all()[0]
+        self.assertEqual(product_mode.attr.id_verification_required, True)
+        self.assertEqual(product_mode.attr.certificate_type, 'professional')
+        product_mode = course.products.all()[1]
+        self.assertEqual(product_mode.attr.id_verification_required, False)
+        self.assertEqual(product_mode.attr.certificate_type, 'professional')
 
     def test_type(self):
         """ Verify the property returns a type value corresponding to the available products. """

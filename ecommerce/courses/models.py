@@ -113,7 +113,7 @@ class Course(models.Model):
         return name
 
     def create_or_update_seat(self, certificate_type, id_verification_required, price, partner,
-                              credit_provider=None, expires=None, credit_hours=None):
+                              credit_provider=None, expires=None, credit_hours=None, remove_stale_modes=True):
         """
         Creates course seat products.
 
@@ -213,7 +213,7 @@ class Course(models.Model):
         stock_record.price_currency = 'USD'
         stock_record.save()
 
-        if self.certificate_type_for_mode(certificate_type) == 'professional':
+        if self.certificate_type_for_mode(certificate_type) == 'professional' and remove_stale_modes:
             id_verification_required_query = Q(
                 attributes__name='id_verification_required',
                 attribute_values__value_boolean=not id_verification_required

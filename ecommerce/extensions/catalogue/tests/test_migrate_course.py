@@ -101,11 +101,12 @@ class CourseMigrationTestMixin(CourseCatalogTestMixin):
         self.assertEqual(seat.attr.id_verification_required, Course.is_mode_verified(mode))
 
     def assert_course_migrated(self):
-        """
-        Verify the course was migrated and saved to the database.
-        """
+        """ Verify the course was migrated and saved to the database. """
         course = Course.objects.get(id=self.course_id)
         seats = course.seat_products
+
+        # Verify that all modes are migrated.
+        self.assertEqual(len(seats), len(self.prices))
 
         parent = course.products.get(structure=Product.PARENT)
         self.assertEqual(list(parent.categories.all()), [self.category])
@@ -285,8 +286,8 @@ class CommandTests(CourseMigrationTestMixin, TestCase):
                          'No new StockRecords should have been saved.')
 
     @httpretty.activate
-    def _handle_with_commit(self):
-        """ Management command for data retrieve."""
+    def test_handle_with_commit(self):
+        """ Verify the management command retrieves data, and saves it to the database. """
         self._mock_lms_apis()
 
         with mock.patch.object(LMSPublisher, 'publish') as mock_publish:
@@ -302,21 +303,7 @@ class CommandTests(CourseMigrationTestMixin, TestCase):
             # Verify that the migrated course was published back to the LMS
             self.assertTrue(mock_publish.called)
 
-    def test_handle_with_commit(self):
-        """ Verify the management command retrieves data, and saves it to the database. """
-        self._handle_with_commit()
         self.assert_course_migrated()
-
-    def test_course_migrated_without_stale_modes(self):
-        """
-        Verify the course was migrated without stale modes.
-        """
-        self._handle_with_commit()
-        course = Course.objects.get(id=self.course_id)
-        seats = course.seat_products
-
-        # Verify that all modes are migrated except stale modes.
-        self.assertEqual(len(seats), len(self.prices) - 1)
 
     @httpretty.activate
     def test_handle_with_no_partner(self):
