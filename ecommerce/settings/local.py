@@ -73,9 +73,9 @@ LMS_URL_ROOT = 'http://127.0.0.1:8000'
 LMS_HEARTBEAT_URL = get_lms_url('/heartbeat')
 
 # The location of the LMS student dashboard
-LMS_DASHBOARD_URL = get_lms_url('/dashboard')
+LMS_DASHBOARD_PATH = '/dashboard'
 
-OAUTH2_PROVIDER_URL = get_lms_url('/oauth2')
+OAUTH2_PROVIDER_PATH = get_lms_url('/oauth2')
 
 COMMERCE_API_URL = get_lms_url('/api/commerce/v1/')
 # END URL CONFIGURATION
@@ -83,15 +83,21 @@ COMMERCE_API_URL = get_lms_url('/api/commerce/v1/')
 
 # AUTHENTICATION
 # Set these to the correct values for your OAuth2/OpenID Connect provider (e.g., devstack)
-SOCIAL_AUTH_EDX_OIDC_KEY = 'replace-me'
-SOCIAL_AUTH_EDX_OIDC_SECRET = 'replace-me'
-SOCIAL_AUTH_EDX_OIDC_URL_ROOT = OAUTH2_PROVIDER_URL
+SOCIAL_AUTH_EDX_OIDC_KEY = {
+    'replace-me': 'replace-me'
+}
+SOCIAL_AUTH_EDX_OIDC_SECRET = {
+    'replace-me': 'replace-me'
+}
+SOCIAL_AUTH_EDX_OIDC_URL_ROOT = {
+    'replace-me': 'replace-me'
+}
 SOCIAL_AUTH_EDX_OIDC_ID_TOKEN_DECRYPTION_KEY = SOCIAL_AUTH_EDX_OIDC_SECRET
 
 JWT_AUTH.update({
     'JWT_SECRET_KEY': 'insecure-secret-key',
     'JWT_ISSUERS': (
-        OAUTH2_PROVIDER_URL,
+        '127.0.0.1:8000',
         # Must match the value of JWT_ISSUER configured for the ecommerce worker.
         'ecommerce_worker',
     ),

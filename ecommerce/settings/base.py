@@ -67,7 +67,8 @@ TIME_ZONE = 'America/New_York'
 LANGUAGE_CODE = 'en-us'
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#site-id
-SITE_ID = 1
+# This needs to be set to None in order to support multitenancy
+SITE_ID = None
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#use-i18n
 USE_I18N = True
@@ -213,7 +214,7 @@ LMS_URL_ROOT = None
 LMS_HEARTBEAT_URL = None
 
 # The location of the LMS student dashboard
-LMS_DASHBOARD_URL = None
+LMS_DASHBOARD_PATH = None
 
 # URL to which enrollment requests should be made
 ENROLLMENT_API_URL = None
@@ -226,8 +227,8 @@ COMMERCE_API_URL = None
 PROVIDER_DATA_PROCESSING_TIMEOUT = 15  # Value is in seconds.
 CREDIT_PROVIDER_CACHE_TIMEOUT = 600
 
-# OAuth2 provider URL used for OAuth2 transactions (e.g. validating access tokens)
-OAUTH2_PROVIDER_URL = None
+# OAuth2 provider path used for OAuth2 transactions (e.g. validating access tokens)
+OAUTH2_PROVIDER_PATH = None
 # END URL CONFIGURATION
 
 
@@ -337,6 +338,8 @@ INSTALLED_APPS += ['social.apps.django_app.default']
 
 AUTHENTICATION_BACKENDS = ('auth_backends.backends.EdXOpenIdConnect',) + AUTHENTICATION_BACKENDS
 
+SOCIAL_AUTH_STRATEGY = 'auth_backends.strategies.SiteAwareDjangoStrategy'
+
 # Set to true if using SSL and running behind a proxy
 SOCIAL_AUTH_REDIRECT_IS_HTTPS = False
 
@@ -369,9 +372,9 @@ SOCIAL_AUTH_USER_FIELDS = ['username', 'email', 'first_name', 'last_name']
 SOCIAL_AUTH_RAISE_EXCEPTIONS = True
 
 # Set these to the correct values for your OAuth2/OpenID Connect provider
-SOCIAL_AUTH_EDX_OIDC_KEY = None
-SOCIAL_AUTH_EDX_OIDC_SECRET = None
-SOCIAL_AUTH_EDX_OIDC_URL_ROOT = None
+SOCIAL_AUTH_EDX_OIDC_KEY = {}
+SOCIAL_AUTH_EDX_OIDC_SECRET = {}
+SOCIAL_AUTH_EDX_OIDC_URL_ROOT = {}
 
 # This value should be the same as SOCIAL_AUTH_EDX_OIDC_SECRET
 SOCIAL_AUTH_EDX_OIDC_ID_TOKEN_DECRYPTION_KEY = SOCIAL_AUTH_EDX_OIDC_SECRET
