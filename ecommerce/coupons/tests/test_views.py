@@ -141,7 +141,7 @@ class CouponOfferViewTests(LmsApiMockMixin, TestCase):
 
     def prepare_course_information(self):
         """ Helper function to prepare an API endpoint that provides course information. """
-        course = CourseFactory()
+        course = CourseFactory(name='Test course')
         seat = course.create_or_update_seat('verified', True, 50, self.partner)
         stock_record = StockRecord.objects.get(product=seat)
         catalog = Catalog.objects.create(name='Test catalog', partner=self.partner)

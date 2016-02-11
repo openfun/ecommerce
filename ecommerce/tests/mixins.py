@@ -276,7 +276,7 @@ class LmsApiMockMixin(object):
                     "uri": "/asset-v1:test+test+test+type@asset+block@images_course_image.jpg"
                 }
             },
-            'name': 'Test course'
+            'name': course.name if course else 'Test course'
         }
         course_info_json = json.dumps(course_info)
         course_id = course.id if course else 'course-v1:test+test+test'

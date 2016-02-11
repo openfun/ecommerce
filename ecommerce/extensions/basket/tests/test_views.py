@@ -1,8 +1,10 @@
 import datetime
+import hashlib
 import json
 
 import ddt
 from django.conf import settings
+from django.core.cache import cache
 from django.core.urlresolvers import reverse
 from django.test import override_settings
 import httpretty
@@ -113,7 +115,7 @@ class BasketSummaryViewTests(LmsApiMockMixin, TestCase):
         super(BasketSummaryViewTests, self).setUp()
         self.user = self.create_user()
         self.client.login(username=self.user.username, password=self.password)
-        self.course = CourseFactory()
+        self.course = CourseFactory(name='BasketSummaryTest')
         toggle_switch(settings.PAYMENT_PROCESSOR_SWITCH_PREFIX + DummyProcessor.NAME, True)
 
     def mock_course_api_error(self, error):
@@ -159,7 +161,7 @@ class BasketSummaryViewTests(LmsApiMockMixin, TestCase):
         self.assertEqual(json.loads(response.context['footer']), {'footer': 'edX Footer'})
 
     def test_cached_course(self):
-        """ Call again to test that the course info is cached. """
+        """ Verify that the course info is cached. """
         seat = self.course.create_or_update_seat('verified', True, 50, self.partner)
         basket = factories.BasketFactory(owner=self.user)
         basket.add_product(seat, 1)
@@ -167,5 +169,12 @@ class BasketSummaryViewTests(LmsApiMockMixin, TestCase):
         self.mock_course_api_response(self.course)
         self.mock_footer_api_response()
 
+        cache_key = 'courses_api_detail_{}'.format(self.course.id)
+        cache_hash = hashlib.md5(cache_key).hexdigest()
+        cached_course_before = cache.get(cache_hash)
+        self.assertIsNone(cached_course_before)
+
         response = self.client.get(self.path)
         self.assertEqual(response.status_code, 200)
+        cached_course_after = cache.get(cache_hash)
+        self.assertEqual(cached_course_after['name'], 'Test course')
