@@ -7,7 +7,6 @@ from django.http import HttpResponseBadRequest, HttpResponseRedirect
 from django.core.cache import cache
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
-
 from oscar.apps.basket.views import *  # pylint: disable=wildcard-import, unused-wildcard-import
 from edx_rest_api_client.client import EdxRestApiClient
 from edx_rest_api_client.exceptions import SlumberHttpBaseException
@@ -19,6 +18,7 @@ from ecommerce.extensions.payment.helpers import get_processor_class
 from ecommerce.extensions.partner.shortcuts import get_partner_for_site
 from ecommerce.settings import get_lms_url
 
+Benefit = get_model('offer', 'Benefit')
 logger = logging.getLogger(__name__)
 StockRecord = get_model('partner', 'StockRecord')
 
@@ -85,8 +85,14 @@ class BasketSummaryView(BasketView):
             except SlumberHttpBaseException:
                 logger.exception('Failed to retrieve data from Course API for course [%s].', course_id)
 
-        applied_offers = self.request.basket.applied_offers()
-        benefit = applied_offers.values()[0].benefit if applied_offers else None
+            applied_offers = self.request.basket.applied_offers()
+            benefit = applied_offers.values()[0].benefit if applied_offers else None
+            if benefit.type == Benefit.PERCENTAGE:
+                line.discount_percentage_value = benefit.value
+                line.is_discounted = True if benefit.value < 100 else False
+            else:
+                line.is_discounted = True
+                line.discount_percentage_value = (benefit.value / line.unit_price_excl_tax) / 100.0
 
         context.update({
             'benefit': benefit,
