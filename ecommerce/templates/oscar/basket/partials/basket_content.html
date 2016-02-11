@@ -1,5 +1,4 @@
 {% load i18n %}
-{% load thumbnail %}
 {% load currency_filters %}
 {% load purchase_info_tags %}
 {% load widget_tweaks %}
@@ -35,22 +34,22 @@
                             {% if line.has_discount %}
                                 <div class="col-sm-3 discount">
                                     <div class="benefit">
-                                        {% if benefit.type == 'Percentage' and benefit.value < 100.00 %}
-                                            {% blocktrans with percentage=benefit.value|stringformat:'d' %}
-                                                {{percentage}}% off
+                                        {% if line.is_discounted %}
+                                            {% blocktrans with percentage_value=line.discount_percentage_value|stringformat:'d' %}
+                                                {{percentage_value}}% off
                                             {% endblocktrans %}
                                         {% endif %}
                                     </div>
                                     <div class="old-price">
                                         {% if line.is_tax_known %}
-                                            {{ line.line_price_incl_tax|currency:line.price_currency }}
-                                        {% else %}
                                             {{ line.line_price_excl_tax|currency:line.price_currency }}
+                                        {% else %}
+                                            {{ line.line_price_incl_tax|currency:line.price_currency }}
                                         {% endif %}
                                     </div>
                                 </div>
                             {% endif %}
-                            <div class="price {% if line.has_discount %}green{% endif %}">
+                            <div class="price {% if line.has_discount %}discounted{% endif %}">
                                 {% if line.is_tax_known %}
                                     {{ line.line_price_incl_tax_incl_discounts|currency:line.price_currency }}
                                 {% else %}
@@ -123,13 +122,12 @@
 
         <div class="row verification-note">
             <span><i class="fa fa-exclamation-circle"></i></span>
-            <b>{% trans "Note:" %}</b>{% trans " You will need a " %}
-            <b>{% trans "webcam" %}</b>{% trans " and a " %}
-            <b>{% trans "photo ID" %}</b>{% trans " to verify your identity before the course starts. " %}
+            {# Translators: <b></b> tags will bold the text within. Keep the tags and translate the text within. #}
+            {% trans "<b>Note:</b> You will need a <b>webcam</b> and a <b>photo ID</b> to verify your identity before the course starts. " %}
         </div>
         <div class="row help">
             <p><b>{% trans "Have questions?" %}</b></p>
-            {% blocktrans with link_start='<a href="https://www.edx.org/gfa" target="_blank">' link_end='</a>' %}
+            {% blocktrans with link_start='<a href="{{ support_url }}" target="_blank">' link_end='</a>' %}
                 Please read {{ link_start }}our FAQs to view common questions about our certificates.{{ link_end }}
             {% endblocktrans %}
         </div>
@@ -138,7 +136,7 @@
     {% block emptybasket %}
         <p>
             {% trans "Your basket is empty." %}
-            <a href="{{ homepage_url }}">{% trans "Continue shopping" %}</a>
+            <a href="{{ homepage_url }}">{% trans "Discover new courses." %}</a>
         </p>
     {% endblock %}
 {% endif %}

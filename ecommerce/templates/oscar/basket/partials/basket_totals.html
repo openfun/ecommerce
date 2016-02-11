@@ -1,14 +1,9 @@
 {% load i18n %}
 {% load currency_filters %}
-{% load shipping_tags %}
 
 <div id="basket_totals" class="col-sm-2">
     {% block order_total %}
         {% trans "Total:" %}
-        {% if order_total.is_tax_known %}
-            {{ order_total.incl_tax|currency:basket.currency }}
-        {% else %}
-            {{ order_total.excl_tax|currency:basket.currency }}
-        {% endif %}
+        {{ order_total.incl_tax|currency:basket.currency }}
     {% endblock %}
 </div>

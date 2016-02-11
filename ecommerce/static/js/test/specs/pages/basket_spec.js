@@ -13,9 +13,9 @@ define([
         describe('Basket Page', function () {
             beforeEach(function () {
                 $('<div id="voucher_form_container"><input id="id_code">' +
-                    '<a id="voucher_form_cancel"></a></button></div>'
+                    '<a id="voucher_form_cancel"></a></button></div>' +
+                    '<div id="voucher_form_link"><a href=""></a></div>'
                 ).appendTo('body');
-                $('<div id="voucher_form_link"><a href=""></a></div>').appendTo('body');
             });
 
             describe('showVoucherForm', function () {
