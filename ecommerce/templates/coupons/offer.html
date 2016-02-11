@@ -4,6 +4,10 @@
 
 {% block title %}{% trans "Redeem" %}{% endblock %}
 
+{% block navbar %}
+    {% include 'edx/partials/_student_navbar.html' %}
+{% endblock navbar %}
+
 {% block content %}
     <div id="offer">
         {% if error %}
