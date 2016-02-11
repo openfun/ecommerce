@@ -20,6 +20,7 @@ require.config({
         'pages': 'js/pages',
         'requirejs': 'bower_components/requirejs/require',
         'routers': 'js/routers',
+        'select2': 'bower_components/select2/dist/js/select2',
         'templates': 'templates',
         'test': 'js/test',
         'text': 'bower_components/text/text',
