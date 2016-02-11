@@ -96,10 +96,12 @@ class BasketSummaryView(BasketView):
                     line.is_discounted = True if benefit.value < 100 else False
                 else:
                     line.is_discounted = True
-                    line.discount_percentage_value = (benefit.value / line.unit_price_excl_tax) / 100.0
+                    line.discount_percentage_value = (benefit.value / line.unit_price_excl_tax) * 100.0
+            else:
+                line.is_discounted = False
+                line.discount_percentage_value = 0
 
         context.update({
-            'support_url': settings.SUPPORT_URL,
             'payment_processors': self.get_payment_processors(),
             'homepage_url': get_lms_url(''),
             'footer': get_lms_footer(),

@@ -18,13 +18,15 @@ from testfixtures import LogCapture
 from ecommerce.core.tests import toggle_switch
 from ecommerce.courses.tests.factories import CourseFactory
 from ecommerce.extensions.payment.tests.processors import DummyProcessor
-from ecommerce.extensions.test.factories import create_coupon
+from ecommerce.extensions.test.factories import create_coupon, prepare_voucher
 from ecommerce.settings import get_lms_url
 from ecommerce.tests.factories import StockRecordFactory
 from ecommerce.tests.mixins import LmsApiMockMixin
 from ecommerce.tests.testcases import TestCase
 
+Applicator = get_class('offer.utils', 'Applicator')
 Basket = get_model('basket', 'Basket')
+Benefit = get_model('offer', 'Benefit')
 Catalog = get_model('catalogue', 'Catalog')
 Selector = get_class('partner.strategy', 'Selector')
 StockRecord = get_model('partner', 'StockRecord')
@@ -146,16 +148,30 @@ class BasketSummaryViewTests(LmsApiMockMixin, TestCase):
                 )
             )
 
-    def test_response_success(self):
+    @ddt.data(
+        (Benefit.PERCENTAGE, 100, 100, False),
+        (Benefit.PERCENTAGE, 50, 50, True),
+        (Benefit.FIXED_PRICE, 50, 10, True)
+    )
+    @ddt.unpack
+    def test_response_success(self, benefit_type, benefit_value, expected_value, is_discounted):
         """ Verify a successful response is returned. """
-        seat = self.course.create_or_update_seat('verified', True, 50, self.partner)
+        seat = self.course.create_or_update_seat('verified', True, 500, self.partner)
         basket = factories.BasketFactory(owner=self.user)
         basket.add_product(seat, 1)
+
+        _range = factories.RangeFactory(products=[seat, ])
+        voucher, __ = prepare_voucher(_range=_range, benefit_type=benefit_type, benefit_value=benefit_value)
+        basket.vouchers.add(voucher)
+        Applicator().apply(basket)
+
         self.assertEqual(basket.lines.count(), 1)
         self.mock_course_api_response(self.course)
         self.mock_footer_api_response()
 
         response = self.client.get(self.path)
+        self.assertEqual(response.context['lines'][0].discount_percentage_value, expected_value)
+        self.assertEqual(response.context['lines'][0].is_discounted, is_discounted)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context['payment_processors'][0].NAME, DummyProcessor.NAME)
         self.assertEqual(json.loads(response.context['footer']), {'footer': 'edX Footer'})
@@ -177,4 +193,4 @@ class BasketSummaryViewTests(LmsApiMockMixin, TestCase):
         response = self.client.get(self.path)
         self.assertEqual(response.status_code, 200)
         cached_course_after = cache.get(cache_hash)
-        self.assertEqual(cached_course_after['name'], 'Test course')
+        self.assertEqual(cached_course_after['name'], self.course.name)
