@@ -61,13 +61,14 @@ class GetVoucherTests(TestCase):
 
     def test_get_voucher_from_code(self):
         """ Verify that get_voucher_from_code() returns product and voucher. """
-        __, orignial_product = prepare_voucher(code=COUPON_CODE)
+        original_voucher, original_product = prepare_voucher(code=COUPON_CODE)
         voucher, product = get_voucher_from_code(code=COUPON_CODE)
 
         self.assertIsNotNone(voucher)
+        self.assertEqual(voucher, original_voucher)
         self.assertEqual(voucher.code, COUPON_CODE)
         self.assertIsNotNone(product)
-        self.assertEqual(product, orignial_product)
+        self.assertEqual(product, original_product)
 
     def test_no_product(self):
         """ Verify that None is returned if there is no product. """
