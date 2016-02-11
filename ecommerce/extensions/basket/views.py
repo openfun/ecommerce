@@ -7,10 +7,10 @@ from django.http import HttpResponseBadRequest, HttpResponseRedirect
 from django.core.cache import cache
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
-from requests import Timeout
+from requests.exceptions import ConnectionError, Timeout
 from oscar.apps.basket.views import *  # pylint: disable=wildcard-import, unused-wildcard-import
 from edx_rest_api_client.client import EdxRestApiClient
-from edx_rest_api_client.exceptions import SlumberHttpBaseException
+from slumber.exceptions import SlumberBaseException
 
 from ecommerce.coupons.views import get_voucher_from_code
 from ecommerce.extensions.api.data import get_lms_footer
@@ -69,7 +69,9 @@ class BasketSummaryView(BasketView):
 
             # Get each course type so we can display to the user at checkout.
             try:
-                line.certificate_type = line.product.attr.certificate_type
+                line.certificate_type = _(
+                    '{certificate_type}'.format(certificate_type=line.product.attr.certificate_type.capitalize())
+                )
             except AttributeError:
                 line.certificate_type = None
 
@@ -83,20 +85,20 @@ class BasketSummaryView(BasketView):
                     # cache the course for COURSES_API_CACHE_TIMEOUT time
                     cache.set(cache_hash, course, settings.COURSES_API_CACHE_TIMEOUT)
                 line.course = course
-            except (SlumberHttpBaseException, Timeout):
+            except (ConnectionError, SlumberBaseException, Timeout):
                 logger.exception('Failed to retrieve data from Course API for course [%s].', course_id)
 
             applied_offers = self.request.basket.applied_offers()
             benefit = applied_offers.values()[0].benefit if applied_offers else None
-            if benefit.type == Benefit.PERCENTAGE:
-                line.discount_percentage_value = benefit.value
-                line.is_discounted = True if benefit.value < 100 else False
-            else:
-                line.is_discounted = True
-                line.discount_percentage_value = (benefit.value / line.unit_price_excl_tax) / 100.0
+            if benefit:
+                if benefit.type == Benefit.PERCENTAGE:
+                    line.discount_percentage_value = benefit.value
+                    line.is_discounted = True if benefit.value < 100 else False
+                else:
+                    line.is_discounted = True
+                    line.discount_percentage_value = (benefit.value / line.unit_price_excl_tax) / 100.0
 
         context.update({
-            'benefit': benefit,
             'payment_processors': self.get_payment_processors(),
             'homepage_url': get_lms_url(''),
             'footer': get_lms_footer(),

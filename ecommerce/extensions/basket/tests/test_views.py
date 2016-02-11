@@ -1,6 +1,7 @@
 import datetime
 import json
 
+import ddt
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.test import override_settings
@@ -9,6 +10,7 @@ from oscar.core.loading import get_class, get_model
 from oscar.test import newfactories as factories
 import pytz
 from requests.exceptions import ConnectionError, Timeout
+from slumber.exceptions import SlumberBaseException
 from testfixtures import LogCapture
 
 from ecommerce.core.tests import toggle_switch
@@ -100,6 +102,8 @@ class BasketSingleItemViewTests(LmsApiMockMixin, TestCase):
         self.assertEqual(basket.lines.first().product, self.stock_record.product)
 
 
+@httpretty.activate
+@ddt.ddt
 @override_settings(PAYMENT_PROCESSORS=['ecommerce.extensions.payment.tests.processors.DummyProcessor'])
 class BasketSummaryViewTests(LmsApiMockMixin, TestCase):
     """ BasketSummaryView basket view tests. """
@@ -110,43 +114,36 @@ class BasketSummaryViewTests(LmsApiMockMixin, TestCase):
         self.user = self.create_user()
         self.client.login(username=self.user.username, password=self.password)
         self.course = CourseFactory()
-        self.site.siteconfiguration.payment_processors = DummyProcessor.NAME
-        self.site.siteconfiguration.save()
         toggle_switch(settings.PAYMENT_PROCESSOR_SWITCH_PREFIX + DummyProcessor.NAME, True)
 
-    @httpretty.activate
-    def test_course_api_failure(self):
+    def mock_course_api_error(self, error):
+        def callback(request, uri, headers):  # pylint: disable=unused-argument
+            raise error
+        course_url = get_lms_url('api/courses/v1/courses/{}/'.format(self.course))
+        httpretty.register_uri(httpretty.GET, course_url, body=callback, content_type='application/json')
+
+    @ddt.data(ConnectionError, SlumberBaseException, Timeout)
+    def test_course_api_failure(self, error):
         """ Verify a connection error and timeout are logged when they happen. """
         self.mock_footer_api_response()
         seat = self.course.create_or_update_seat('verified', True, 50, self.partner)
         basket = factories.BasketFactory(owner=self.user)
         basket.add_product(seat, 1)
         self.assertEqual(basket.lines.count(), 1)
-        course_url = get_lms_url('api/courses/v1/courses/')
+
         logger_name = 'ecommerce.extensions.basket.views'
-        with self.assertRaises(ConnectionError):
-            with LogCapture(logger_name) as l:
-                self.client.get(self.path)
-                l.check(
-                    (
-                        logger_name, 'ERROR', u'Failed to retrieve data from Course API for course {}'.format(self.course.id)
-                    )
+        self.mock_course_api_error(error)
+
+        with LogCapture(logger_name) as l:
+            response = self.client.get(self.path)
+            self.assertEqual(response.status_code, 200)
+            l.check(
+                (
+                    logger_name, 'ERROR',
+                    u'Failed to retrieve data from Course API for course [{}].'.format(self.course.id)
                 )
+            )
 
-        def callback(request, uri, headers):  # pylint: disable=unused-argument
-            raise Timeout
-        httpretty.register_uri(httpretty.GET, course_url, body=callback, content_type='application/json')
-
-        with self.assertRaises(Timeout):
-            with LogCapture(logger_name) as l:
-                self.client.get(self.path)
-                l.check(
-                    (
-                        logger_name, 'ERROR', u'Failed to retrieve data from Course API for course {}'.format(self.course.id)
-                    )
-                )
-
-    @httpretty.activate
     def test_response_success(self):
         """ Verify a successful response is returned. """
         seat = self.course.create_or_update_seat('verified', True, 50, self.partner)
@@ -158,11 +155,9 @@ class BasketSummaryViewTests(LmsApiMockMixin, TestCase):
 
         response = self.client.get(self.path)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.context['benefit'], None)
         self.assertEqual(response.context['payment_processors'][0].NAME, DummyProcessor.NAME)
         self.assertEqual(json.loads(response.context['footer']), {'footer': 'edX Footer'})
 
-    @httpretty.activate
     def test_cached_course(self):
         """ Call again to test that the course info is cached. """
         seat = self.course.create_or_update_seat('verified', True, 50, self.partner)
