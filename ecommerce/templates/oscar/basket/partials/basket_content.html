@@ -41,20 +41,12 @@
                                         {% endif %}
                                     </div>
                                     <div class="old-price">
-                                        {% if line.is_tax_known %}
-                                            {{ line.line_price_excl_tax|currency:line.price_currency }}
-                                        {% else %}
-                                            {{ line.line_price_incl_tax|currency:line.price_currency }}
-                                        {% endif %}
+                                        {{ line.line_price_incl_tax|currency:line.price_currency }}
                                     </div>
                                 </div>
                             {% endif %}
                             <div class="price {% if line.has_discount %}discounted{% endif %}">
-                                {% if line.is_tax_known %}
-                                    {{ line.line_price_incl_tax_incl_discounts|currency:line.price_currency }}
-                                {% else %}
-                                    {{ line.line_price_excl_tax_incl_discounts|currency:line.price_currency }}
-                                {% endif %}
+                                {{ line.line_price_incl_tax_incl_discounts|currency:line.price_currency }}
                             </div>
                         </div>
                     {% endfor %}
