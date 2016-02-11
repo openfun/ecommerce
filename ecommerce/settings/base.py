@@ -477,3 +477,6 @@ CELERY_ALWAYS_EAGER = False
 
 PLATFORM_NAME = 'Your Platform Name Here'
 THEME_SCSS = 'sass/themes/default.scss'
+
+# Link to edX support
+SUPPORT_LINK = 'https://support.edx.org'

@@ -99,6 +99,7 @@ class BasketSummaryView(BasketView):
                     line.discount_percentage_value = (benefit.value / line.unit_price_excl_tax) / 100.0
 
         context.update({
+            'support_url': settings.SUPPORT_URL,
             'payment_processors': self.get_payment_processors(),
             'homepage_url': get_lms_url(''),
             'footer': get_lms_footer(),
