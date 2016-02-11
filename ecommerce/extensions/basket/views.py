@@ -7,6 +7,7 @@ from django.http import HttpResponseBadRequest, HttpResponseRedirect
 from django.core.cache import cache
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
+from requests import Timeout
 from oscar.apps.basket.views import *  # pylint: disable=wildcard-import, unused-wildcard-import
 from edx_rest_api_client.client import EdxRestApiClient
 from edx_rest_api_client.exceptions import SlumberHttpBaseException
@@ -82,7 +83,7 @@ class BasketSummaryView(BasketView):
                     # cache the course for COURSES_API_CACHE_TIMEOUT time
                     cache.set(cache_hash, course, settings.COURSES_API_CACHE_TIMEOUT)
                 line.course = course
-            except SlumberHttpBaseException:
+            except (SlumberHttpBaseException, Timeout):
                 logger.exception('Failed to retrieve data from Course API for course [%s].', course_id)
 
             applied_offers = self.request.basket.applied_offers()

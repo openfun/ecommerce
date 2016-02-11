@@ -8,7 +8,7 @@ import httpretty
 from oscar.core.loading import get_class, get_model
 from oscar.test import newfactories as factories
 import pytz
-from requests.exceptions import ConnectionError
+from requests.exceptions import ConnectionError, Timeout
 from testfixtures import LogCapture
 
 from ecommerce.core.tests import toggle_switch
@@ -115,8 +115,8 @@ class BasketSummaryViewTests(LmsApiMockMixin, TestCase):
         toggle_switch(settings.PAYMENT_PROCESSOR_SWITCH_PREFIX + DummyProcessor.NAME, True)
 
     @httpretty.activate
-    def test_connection_to_course_error(self):
-        """ Verify a connection error is logged when a connection error happens. """
+    def test_course_api_failure(self):
+        """ Verify a connection error and timeout are logged when they happen. """
         self.mock_footer_api_response()
         seat = self.course.create_or_update_seat('verified', True, 50, self.partner)
         basket = factories.BasketFactory(owner=self.user)
@@ -129,10 +129,20 @@ class BasketSummaryViewTests(LmsApiMockMixin, TestCase):
                 self.client.get(self.path)
                 l.check(
                     (
-                        logger_name, 'ERROR',
-                        u'Could not get course information. [Client Error 404: {course_url}{course_id}/]'.format(
-                            course_url=course_url, course_id=self.course.id
-                        )
+                        logger_name, 'ERROR', u'Failed to retrieve data from Course API for course {}'.format(self.course.id)
+                    )
+                )
+
+        def callback(request, uri, headers):  # pylint: disable=unused-argument
+            raise Timeout
+        httpretty.register_uri(httpretty.GET, course_url, body=callback, content_type='application/json')
+
+        with self.assertRaises(Timeout):
+            with LogCapture(logger_name) as l:
+                self.client.get(self.path)
+                l.check(
+                    (
+                        logger_name, 'ERROR', u'Failed to retrieve data from Course API for course {}'.format(self.course.id)
                     )
                 )
 
