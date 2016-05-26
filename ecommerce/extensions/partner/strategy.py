@@ -1,3 +1,7 @@
+
+from decimal import Decimal
+
+
 from django.utils import timezone
 
 from oscar.apps.partner import availability, strategy
@@ -35,6 +39,18 @@ class DefaultStrategy(strategy.UseFirstStockRecord, CourseSeatAvailabilityPolicy
     pass
 
 
+class FUNVariableTax(strategy.FixedRateTax):
+    def get_rate(self, product, stockrecord):
+        # Variable VAT is to implement here
+        # Probably regarding a custom property of the given product's parent
+        return Decimal(0.0)
+
+
+class FUNStrategy(strategy.UseFirstStockRecord, CourseSeatAvailabilityPolicyMixin,
+                      FUNVariableTax, strategy.Structured):
+    pass
+
+
 class Selector(object):
     def strategy(self, request=None, user=None, **kwargs):  # pylint: disable=unused-argument
-        return DefaultStrategy(request if hasattr(request, 'user') else None)
+        return FUNStrategy(request if hasattr(request, 'user') else None)

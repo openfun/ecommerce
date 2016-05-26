@@ -4,15 +4,12 @@
 
 import json
 import logging
-import os
 
 import requests
 
 from django.conf import settings
-from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.db import transaction
-from django.http import Http404, HttpResponse, HttpResponseBadRequest
-from django.shortcuts import redirect
+from django.http import HttpResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import View
@@ -47,7 +44,6 @@ class PayboxSystemNotifyView(EdxOrderPlacementMixin, View):
     def dispatch(self, request, *args, **kwargs):
         return super(PayboxSystemNotifyView, self).dispatch(request, *args, **kwargs)
 
-
     def _get_basket(self, basket_id):
         try:
             basket = Basket.objects.get(id=basket_id)
@@ -55,7 +51,6 @@ class PayboxSystemNotifyView(EdxOrderPlacementMixin, View):
         except Basket.DoesNotExist:
             basket = None
         return basket
-
 
     def post(self, request):
         """Process a Paybox merchant notification and place an order for paid products as appropriate."""
